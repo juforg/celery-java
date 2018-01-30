@@ -60,7 +60,7 @@ Check out generated Javadoc at [http://crabhi.github.io/celery-java/apidocs/](ht
 
 1. Annotate your class that does something useful as a `@CeleryTask`.
 
-    ```java
+```java
     import com.geneea.celery.CeleryTask;
 
     @CeleryTask
@@ -70,12 +70,12 @@ Check out generated Javadoc at [http://crabhi.github.io/celery-java/apidocs/](ht
             return x + y;
         }
     }
-    ```
+```
 
 2. Run `Worker` with your tasks on classpath. You can directly use the `Worker` class or embed it into your `main`
 function.
 
-    ```java
+```java
     import com.geneea.celery.CeleryWorker;
 
     public class MyWorker {
@@ -83,11 +83,11 @@ function.
             CeleryWorker.main(args);
         }
     }
-    ```
+```
 
 3. From the Python side, call the task by the class name hash (`#`) method name.
 
-    ```python
+```python
     In [1]: import celery
 
     In [2]: app = celery.Celery(broker="amqp://localhost/", backend="rpc://localhost")
@@ -98,8 +98,8 @@ function.
     In [4]: %%timeit
        ...: app.signature("com.geneea.celery.examples.TestTask#sum", [1, 2]).delay().get()
        ...:
-    2.1 ms Â± 170 Âµs per loop (mean Â± std. dev. of 7 runs, 100 loops each)
-    ```
+    2.1 ms ± 170 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+```
 
 ## Calling Python task from Java
 
