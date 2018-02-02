@@ -98,7 +98,7 @@ function.
     In [4]: %%timeit
        ...: app.signature("com.geneea.celery.examples.TestTask#sum", [1, 2]).delay().get()
        ...:
-    2.1 ms ± 170 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+    2.1 ms Â± 170 Âµs per loop (mean Â± std. dev. of 7 runs, 100 loops each)
 ```
 
 ## Calling Python task from Java
