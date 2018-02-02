@@ -1,21 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <parent>
-        <artifactId>celery-java-parent</artifactId>
-        <groupId>com.geneea.celery</groupId>
-        <version>1.7-SNAPSHOT</version>
-    </parent>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>celery-java</artifactId>
-
     <packaging>jar</packaging>
+
+    <parent>
+        <groupId>com.geneea.celery</groupId>
+        <artifactId>celery-java-parent</artifactId>
+        <version>1.7-SNAPSHOT</version>
+    </parent>
+
     <name>Celery-Java</name>
     <description>
-        Java library for interfacing with http://celeryproject.org including code for both task submissions and task
-        execution.
+        Java library for interfacing with http://celeryproject.org including code
+        for both task submissions and task execution.
     </description>
-    <url>https://crabhi.github.io/celery-java/</url>
+    <url>https://bitbucket.org/geneea/celery-java</url>
 
     <dependencies>
         <dependency>
@@ -81,6 +83,7 @@
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-all</artifactId>
             <version>2.4.10</version>
+            <scope>test</scope>
         </dependency>
         <dependency> <!-- enables mocking of classes (in addition to interfaces) -->
             <groupId>net.bytebuddy</groupId>
@@ -104,21 +107,13 @@
             <groupId>com.nagternal</groupId>
             <artifactId>spock-genesis</artifactId>
             <version>0.6.0</version>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.0.0-M1</version>
-                <configuration>
-                    <reportOutputDirectory>${project.basedir}/..</reportOutputDirectory>
-                </configuration>
-            </plugin>
-
             <!-- Mandatory plugins for using Spock -->
             <plugin>
                 <!-- The gmavenplus plugin is used to compile Groovy code. To learn more about this plugin,
@@ -129,7 +124,6 @@
                 <executions>
                     <execution>
                         <goals>
-                            <goal>compile</goal>
                             <goal>testCompile</goal>
                         </goals>
                     </execution>

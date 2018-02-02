@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <parent>
-        <artifactId>celery-java-parent</artifactId>
-        <groupId>com.geneea.celery</groupId>
-        <version>1.7-SNAPSHOT</version>
-        <relativePath>..</relativePath>
-    </parent>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>examples</artifactId>
+    <packaging>jar</packaging>
+
+    <parent>
+        <groupId>com.geneea.celery</groupId>
+        <artifactId>celery-java-parent</artifactId>
+        <version>1.7-SNAPSHOT</version>
+    </parent>
 
     <build>
         <plugins>
@@ -31,7 +33,6 @@
                 <executions>
                     <execution>
                         <goals>
-                            <goal>compile</goal>
                             <goal>testCompile</goal>
                         </goals>
                     </execution>
@@ -53,6 +54,12 @@
             <groupId>org.spockframework</groupId>
             <artifactId>spock-core</artifactId>
             <version>1.1-groovy-2.4</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.nagternal</groupId>
+            <artifactId>spock-genesis</artifactId>
+            <version>0.6.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
