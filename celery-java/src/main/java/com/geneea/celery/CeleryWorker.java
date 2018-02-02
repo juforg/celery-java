@@ -20,6 +20,7 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -30,21 +31,18 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
  * CeleryWorker that listens on RabbitMQ queue and executes tasks. You can either embed it into your project via
  * {@link #create(String, Connection)} or start it stand-alone via {@link CeleryWorkerCLI}.
  */
+@Slf4j
 public class CeleryWorker extends DefaultConsumer {
 
     private final ObjectMapper jsonMapper;
     private final Lock taskRunning = new ReentrantLock();
     private final Backend backend;
-
-    private static final Logger LOG = Logger.getLogger(CeleryWorker.class.getName());
 
     public CeleryWorker(Channel channel, Backend backend) {
         super(channel);
@@ -70,26 +68,26 @@ public class CeleryWorker extends DefaultConsumer {
                     (ArrayNode) payload.get(0),
                     (ObjectNode) payload.get(1));
 
-            LOG.info(String.format("CeleryTask %s[%s] succeeded in %s. Result was: %s",
-                    taskClassName, taskId, stopwatch, result));
+            log.info("CeleryTask {}[{}] succeeded in {}", taskClassName, taskId, stopwatch);
+            log.debug("CeleryTask {}[{}] result was: {}", taskClassName, taskId, result);
 
             backend.reportResult(taskId, properties.getReplyTo(), properties.getCorrelationId(), result);
 
             getChannel().basicAck(envelope.getDeliveryTag(), false);
         } catch (DispatchException e) {
-            LOG.log(Level.SEVERE, String.format("CeleryTask %s dispatch error", taskId), e.getCause());
+            log.error(String.format("CeleryTask %s dispatch error", taskId), e.getCause());
             backend.reportException(taskId, properties.getReplyTo(), properties.getCorrelationId(), e);
             getChannel().basicAck(envelope.getDeliveryTag(), false);
         } catch (InvocationTargetException e) {
-            LOG.log(Level.WARNING, String.format("CeleryTask %s error", taskId), e.getCause());
+            log.error(String.format("CeleryTask %s error", taskId), e.getCause());
             backend.reportException(taskId, properties.getReplyTo(), properties.getCorrelationId(), e.getCause());
             getChannel().basicAck(envelope.getDeliveryTag(), false);
         } catch (JsonProcessingException e) {
-            LOG.log(Level.SEVERE, String.format("CeleryTask %s - %s", taskId, e), e.getCause());
+            log.error(String.format("CeleryTask %s - processing error", taskId), e);
             backend.reportException(taskId, properties.getReplyTo(), properties.getCorrelationId(), e);
             getChannel().basicNack(envelope.getDeliveryTag(), false, false);
         } catch (RuntimeException e) {
-            LOG.log(Level.SEVERE, String.format("CeleryTask %s - %s", taskId, e), e);
+            log.error(String.format("CeleryTask %s - runtime error", taskId), e);
             backend.reportException(taskId, properties.getReplyTo(), properties.getCorrelationId(),
                     e.getCause() != null ? e.getCause() : e);
             getChannel().basicNack(envelope.getDeliveryTag(), false, false);

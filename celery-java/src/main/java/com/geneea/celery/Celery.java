@@ -1,17 +1,18 @@
 package com.geneea.celery;
 
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.google.common.base.Joiner;
-import com.google.common.base.Suppliers;
-import lombok.Builder;
-import lombok.extern.java.Log;
 import com.geneea.celery.backends.CeleryBackends;
 import com.geneea.celery.brokers.CeleryBrokers;
 import com.geneea.celery.spi.Backend;
 import com.geneea.celery.spi.Broker;
 import com.geneea.celery.spi.Message;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.google.common.base.Joiner;
+import com.google.common.base.Suppliers;
+import lombok.Builder;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -29,7 +30,7 @@ import java.util.function.Supplier;
 /**
  * A client allowing you to submit a task and get a {@link Future} describing the result.
  */
-@Log
+@Slf4j
 public class Celery {
     private final String clientId = UUID.randomUUID().toString();
     private final String clientName = clientId + "@" + getLocalHostName();
