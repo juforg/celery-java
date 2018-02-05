@@ -14,6 +14,11 @@ public class TaskResult {
     public Object traceback;
     @JsonProperty("task_id") public String taskId;
 
+    @SuppressWarnings("unchecked")
+    public <R> R getResult() {
+        return (R) result;
+    }
+
     public enum Status {
         SUCCESS,
         FAILURE,

@@ -40,14 +40,13 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CeleryWorker extends DefaultConsumer {
 
-    private final ObjectMapper jsonMapper;
+    private final ObjectMapper jsonMapper = new ObjectMapper();
     private final Lock taskRunning = new ReentrantLock();
     private final Backend backend;
 
-    public CeleryWorker(Channel channel, Backend backend) {
+    CeleryWorker(Channel channel, Backend backend) {
         super(channel);
         this.backend = backend;
-        jsonMapper = new ObjectMapper();
     }
 
     @Override
@@ -88,8 +87,7 @@ public class CeleryWorker extends DefaultConsumer {
             getChannel().basicNack(envelope.getDeliveryTag(), false, false);
         } catch (RuntimeException e) {
             log.error(String.format("CeleryTask %s - runtime error", taskId), e);
-            backend.reportException(taskId, properties.getReplyTo(), properties.getCorrelationId(),
-                    e.getCause() != null ? e.getCause() : e);
+            backend.reportException(taskId, properties.getReplyTo(), properties.getCorrelationId(), e.getCause() != null ? e.getCause() : e);
             getChannel().basicNack(envelope.getDeliveryTag(), false, false);
         } finally {
             taskRunning.unlock();
