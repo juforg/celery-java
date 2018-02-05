@@ -2,10 +2,7 @@ package com.geneea.examples
 
 import com.geneea.celery.Celery
 import com.geneea.celery.WorkerException
-import com.geneea.celery.examples.BadTaskProxy
-import com.geneea.celery.examples.TestTask
-import com.geneea.celery.examples.TestTaskProxy
-import com.geneea.celery.examples.TestVoidTaskProxy
+import com.geneea.celery.examples.*
 import com.rabbitmq.client.ConnectionFactory
 import org.junit.Rule
 import org.rnorth.ducttape.unreliables.Unreliables
