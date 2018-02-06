@@ -24,11 +24,10 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.function.Supplier;
 
 /**
- * A client allowing you to submit a task and get a {@link Future} describing the result.
+ * A client allowing you to submit a task and get a {@link ListenableFuture} describing the result.
  */
 @Slf4j
 public class Celery {

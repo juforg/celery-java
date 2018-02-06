@@ -72,15 +72,14 @@ Check out generated Javadoc at [http://crabhi.github.io/celery-java/apidocs/](ht
     }
 ```
 
-2. Run `Worker` with your tasks on classpath. You can directly use the `Worker` class or embed it into your `main`
-function.
+2. Run `CeleryWorker` with your tasks on classpath. You can directly use its CLI class or embed it into your `main` function.
 
 ```java
-    import com.geneea.celery.CeleryWorker;
+    import com.geneea.celery.CeleryWorkerCLI;
 
     public class MyWorker {
         public static void main(String[] args) throws Exception {
-            CeleryWorker.main(args);
+            CeleryWorkerCLI.main(args);
         }
     }
 ```
@@ -120,7 +119,7 @@ System.out.println(client.submit("tasks.add", new Object[]{1, 2}).get());
 
 The `@CeleryTask` annotation on a class `MyClass` causes `MyClassProxy` and `MyClassLoader` to be generated.
 `MyClassLoader` registers the task into the worker and `MyClassProxy` has all the task methods tweaked so they
-now return a `Future<...>` instead of the original type.
+now return a `ListenableFuture<...>` instead of the original type.
 
 To use the proxy, you need a Celery `Client`.
 
