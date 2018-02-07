@@ -1,15 +1,16 @@
 package com.geneea.celery.spi;
 
+import java.io.Closeable;
 import java.io.IOException;
 
 /**
- * <i>Internal, used by {@link com.geneea.celery.Celery} and implemented by broker providers.</i>
+ * <i>Internal, used by {@link com.geneea.celery.CeleryClientCore} and implemented by broker providers.</i>
  *
  * <p>
  *     Broker delivers messages to the workers.
  * </p>
  */
-public interface Broker {
+public interface Broker extends Closeable {
 
     /**
      * The client should declare a queue it intends to use. This is a performance optimization so that the broker

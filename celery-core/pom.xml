@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>celery-java</artifactId>
+    <artifactId>celery-core</artifactId>
     <packaging>jar</packaging>
 
     <parent>
@@ -12,7 +12,7 @@
         <version>1.7-SNAPSHOT</version>
     </parent>
 
-    <name>Celery-Java</name>
+    <name>Celery-Core</name>
     <description>
         Java library for interfacing with http://celeryproject.org including code
         for both task submissions and task execution.
@@ -21,26 +21,18 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.geneea.celery</groupId>
-            <artifactId>celery-core</artifactId>
-            <version>1.7-SNAPSHOT</version>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>net.sourceforge.argparse4j</groupId>
-            <artifactId>argparse4j</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.kohsuke.metainf-services</groupId>
-            <artifactId>metainf-services</artifactId>
-            <version>1.1</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.velocity</groupId>
-            <artifactId>velocity-engine-core</artifactId>
-            <version>2.0</version>
-            <scope>compile</scope>
+            <groupId>com.rabbitmq</groupId>
+            <artifactId>amqp-client</artifactId>
+            <version>4.2.0</version>
         </dependency>
 
         <!-- Test dependencies -->
@@ -82,7 +74,6 @@
             <version>0.6.0</version>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 
     <build>

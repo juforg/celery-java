@@ -10,6 +10,7 @@ import java.util.concurrent.TimeoutException;
  * Pluggable interface for brokers. Implement it as an entry point if you provide your own {@link Broker}.
  */
 public interface BrokerFactory {
+
     /**
      * @return protocols this factory supports
      */

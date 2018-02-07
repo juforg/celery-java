@@ -1,10 +1,10 @@
 package com.geneea.celery
 
-import com.google.common.util.concurrent.SettableFuture
-import groovy.json.JsonSlurper
 import com.geneea.celery.spi.Backend
 import com.geneea.celery.spi.Broker
 import com.geneea.celery.spi.Message
+import com.google.common.util.concurrent.SettableFuture
+import groovy.json.JsonSlurper
 import spock.genesis.Gen
 import spock.lang.Specification
 

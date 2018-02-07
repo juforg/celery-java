@@ -1,11 +1,11 @@
 package com.geneea.celery.brokers.rabbit;
 
+import com.geneea.celery.spi.Broker;
+import com.geneea.celery.spi.BrokerFactory;
+
 import com.google.common.collect.ImmutableSet;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
-import org.kohsuke.MetaInfServices;
-import com.geneea.celery.spi.Broker;
-import com.geneea.celery.spi.BrokerFactory;
 
 import java.io.IOException;
 import java.net.URI;
@@ -16,11 +16,16 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeoutException;
 
-@MetaInfServices(BrokerFactory.class)
+/**
+ * A factory class for {@link RabbitBroker}.
+ */
 public class RabbitBrokerFactory implements BrokerFactory {
+
+    private static final Set<String> PROTOCOLS = ImmutableSet.of("amqp", "amqps");
+
     @Override
     public Set<String> getProtocols() {
-        return ImmutableSet.of("amqp", "amqps");
+        return PROTOCOLS;
     }
 
     @Override

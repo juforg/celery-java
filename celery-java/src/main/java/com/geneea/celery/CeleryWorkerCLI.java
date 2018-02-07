@@ -1,15 +1,12 @@
 package com.geneea.celery;
 
 import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.security.GeneralSecurityException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeoutException;
 
@@ -37,17 +34,19 @@ public class CeleryWorkerCLI {
 
         final Connection connection;
         try {
-            final ConnectionFactory factory = new ConnectionFactory();
-            factory.setUri(broker);
-            connection = factory.newConnection(Executors.newCachedThreadPool());
-        } catch (URISyntaxException | GeneralSecurityException | IOException | TimeoutException e) {
+            connection = CeleryWorker.connect(broker, Executors.newCachedThreadPool());
+        } catch (IOException | TimeoutException e) {
             parser.handleError(new ArgumentParserException("bad \"broker\" argument", e, parser));
             System.exit(1);
             return;
         }
 
         for (int i = 0; i < numWorkers; i++) {
-            CeleryWorker.create(queue, connection);
+            CeleryWorker.builder()
+                    .connection(connection)
+                    .queue(queue)
+                    .build()
+                    .start();
         }
 
         System.out.printf("Started consuming tasks from queue %s.%n", queue);

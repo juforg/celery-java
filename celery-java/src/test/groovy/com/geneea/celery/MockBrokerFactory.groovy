@@ -1,13 +1,11 @@
 package com.geneea.celery
 
-import org.kohsuke.MetaInfServices
 import com.geneea.celery.spi.Broker
 import com.geneea.celery.spi.BrokerFactory
 import com.geneea.celery.spi.Message
 
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.TimeoutException
-
 
 public class MockBrokerFactory implements BrokerFactory {
     static List<String> queuesDeclared = []
@@ -36,6 +34,10 @@ public class MockBrokerFactory implements BrokerFactory {
                 def message = messages[messageNum % messages.size()]
                 messageNum++
                 return message
+            }
+
+            @Override
+            void close() throws IOException {
             }
         }
     }

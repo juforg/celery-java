@@ -9,6 +9,7 @@
     <version>1.7-SNAPSHOT</version>
 
     <modules>
+        <module>celery-core</module>
         <module>celery-java</module>
         <module>examples</module>
     </modules>

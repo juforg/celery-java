@@ -1,5 +1,7 @@
 package com.geneea.celery.spi;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.IOException;
 import java.net.URI;
 import java.util.Set;
@@ -21,10 +23,11 @@ public interface BackendFactory {
      *
      * @param uri how to connect to the backend
      * @param executor for background tasks
+     * @param jsonMapper for JSON data serialization and deserialization
      * @return new backend instance
      *
      * @throws IOException general IO problem
      * @throws TimeoutException if the connection times out
      */
-    Backend createBackend(URI uri, ExecutorService executor) throws IOException, TimeoutException;
+    Backend createBackend(URI uri, ExecutorService executor, ObjectMapper jsonMapper) throws IOException, TimeoutException;
 }
