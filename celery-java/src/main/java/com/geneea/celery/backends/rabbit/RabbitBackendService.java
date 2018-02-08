@@ -5,6 +5,6 @@ import com.geneea.celery.spi.BackendFactory;
 import org.kohsuke.MetaInfServices;
 
 @MetaInfServices(BackendFactory.class)
-class RabbitBackendService extends RabbitBackendFactory {
+public class RabbitBackendService extends RabbitBackendFactory {
 
 }

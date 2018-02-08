@@ -1,6 +1,5 @@
 package com.geneea.celery.brokers.rabbit;
 
-import com.geneea.celery.spi.Broker;
 import com.geneea.celery.spi.BrokerFactory;
 
 import com.google.common.collect.ImmutableSet;
@@ -29,7 +28,7 @@ public class RabbitBrokerFactory implements BrokerFactory {
     }
 
     @Override
-    public Broker createBroker(URI uri, ExecutorService executor) throws IOException, TimeoutException {
+    public RabbitBroker createBroker(URI uri, ExecutorService executor) throws IOException, TimeoutException {
         ConnectionFactory factory = new ConnectionFactory();
         try {
             factory.setUri(uri);

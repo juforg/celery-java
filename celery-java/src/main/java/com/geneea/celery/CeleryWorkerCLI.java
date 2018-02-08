@@ -1,5 +1,6 @@
 package com.geneea.celery;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Connection;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
@@ -35,16 +36,18 @@ public class CeleryWorkerCLI {
         final Connection connection;
         try {
             connection = CeleryWorker.connect(broker, Executors.newCachedThreadPool());
-        } catch (IOException | TimeoutException e) {
+        } catch (IOException | TimeoutException | IllegalArgumentException e) {
             parser.handleError(new ArgumentParserException("bad \"broker\" argument", e, parser));
             System.exit(1);
             return;
         }
 
+        final ObjectMapper jsonMapper = new ObjectMapper();
         for (int i = 0; i < numWorkers; i++) {
             CeleryWorker.builder()
                     .connection(connection)
                     .queue(queue)
+                    .jsonMapper(jsonMapper)
                     .build()
                     .start();
         }

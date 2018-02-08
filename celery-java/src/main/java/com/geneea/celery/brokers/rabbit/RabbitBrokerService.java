@@ -5,6 +5,6 @@ import com.geneea.celery.spi.BrokerFactory;
 import org.kohsuke.MetaInfServices;
 
 @MetaInfServices(BrokerFactory.class)
-class RabbitBrokerService extends RabbitBrokerFactory {
+public class RabbitBrokerService extends RabbitBrokerFactory {
 
 }

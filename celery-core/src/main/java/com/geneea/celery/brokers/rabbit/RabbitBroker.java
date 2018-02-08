@@ -12,7 +12,7 @@ import java.io.IOException;
  */
 public class RabbitBroker implements Broker {
 
-    private final Channel channel;
+    final Channel channel;
 
     public RabbitBroker(Channel channel) {
         this.channel = channel;
@@ -25,7 +25,7 @@ public class RabbitBroker implements Broker {
 
     @Override
     public Message newMessage() {
-        return new RabbitMessage(channel);
+        return new RabbitMessage(this);
     }
 
     @Override

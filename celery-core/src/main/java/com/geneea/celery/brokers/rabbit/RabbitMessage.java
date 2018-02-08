@@ -3,7 +3,6 @@ package com.geneea.celery.brokers.rabbit;
 import com.geneea.celery.spi.Message;
 
 import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.Channel;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -15,14 +14,14 @@ import java.util.Map;
  */
 class RabbitMessage implements Message {
 
-    private final Channel channel;
+    private final RabbitBroker broker;
     private final RabbitMessageHeaders headers;
     private final AMQP.BasicProperties.Builder props;
 
     private byte[] body = null;
 
-    public RabbitMessage(Channel channel) {
-        this.channel = channel;
+    public RabbitMessage(RabbitBroker broker) {
+        this.broker = broker;
         headers = new RabbitMessageHeaders();
         props = new AMQP.BasicProperties.Builder()
                 .deliveryMode(2)
@@ -52,7 +51,7 @@ class RabbitMessage implements Message {
     @Override
     public void send(String queue) throws IOException {
         AMQP.BasicProperties messageProperties = props.headers(headers.map).build();
-        channel.basicPublish("", "celery", messageProperties, body);
+        broker.channel.basicPublish("", "celery", messageProperties, body);
     }
 
     class RabbitMessageHeaders implements Headers {
