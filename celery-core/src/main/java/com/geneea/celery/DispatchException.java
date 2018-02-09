@@ -5,11 +5,11 @@ package com.geneea.celery;
  */
 public class DispatchException extends Exception {
 
-    DispatchException(String msg, Object... params) {
+    public DispatchException(String msg, Object... params) {
         super(String.format(msg, params));
     }
 
-    DispatchException(Throwable cause, String msg, Object... params) {
+    public DispatchException(Throwable cause, String msg, Object... params) {
         super(String.format(msg, params), cause);
     }
 }

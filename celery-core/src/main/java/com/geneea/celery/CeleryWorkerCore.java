@@ -2,7 +2,6 @@
 package com.geneea.celery;
 
 import com.geneea.celery.backends.rabbit.RabbitBackend;
-import com.geneea.celery.spi.Backend;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,7 +41,7 @@ public abstract class CeleryWorkerCore extends DefaultConsumer implements Closea
     private static final Pattern TASK_NAME = Pattern.compile("^(.+)#(.+)$");
 
     private final ReentrantLock taskRunning = new ReentrantLock();
-    private final Backend backend;
+    private final RabbitBackend backend;
     private final String queue;
     private final ObjectMapper jsonMapper;
 
@@ -181,7 +180,8 @@ public abstract class CeleryWorkerCore extends DefaultConsumer implements Closea
 
             return method.invoke(taskObj, convertedArgs);
         } catch (IllegalArgumentException | ReflectiveOperationException e) {
-            throw new DispatchException(e, "Error calling %s", method);
+            Throwable cause = e.getCause() != null ? e.getCause() : e;
+            throw new DispatchException(cause, "Error calling %s", method);
         }
     }
 
