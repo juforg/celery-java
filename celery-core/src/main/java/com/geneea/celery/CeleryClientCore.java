@@ -168,7 +168,7 @@ public abstract class CeleryClientCore implements Closeable {
      *
      * @throws IOException if the message couldn't be sent
      */
-    public <T, R> ListenableFuture<R> submit(Class<T> taskClass, String method, Object[] args) throws IOException {
+    public final <T, R> ListenableFuture<R> submit(Class<T> taskClass, String method, Object[] args) throws IOException {
         return submit(taskClass.getName() + "#" + method, args);
     }
 
@@ -181,7 +181,7 @@ public abstract class CeleryClientCore implements Closeable {
      *
      * @throws IOException if the message couldn't be sent
      */
-    public <R> ListenableFuture<R> submit(String name, Object[] args) throws IOException {
+    public final <R> ListenableFuture<R> submit(String name, Object[] args) throws IOException {
         // Get the provider early to increase the chance to find out there is a connection problem before actually
         // sending the message.
         //
@@ -228,7 +228,7 @@ public abstract class CeleryClientCore implements Closeable {
     }
 
     @Override
-    public void close() throws IOException {
+    public final void close() throws IOException {
         broker.get().close();
         Optional<Backend> b = resultsProvider.get()
                 .map(ResultsProvider::getBackend);

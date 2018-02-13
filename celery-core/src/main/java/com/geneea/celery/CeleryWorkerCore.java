@@ -83,7 +83,7 @@ public abstract class CeleryWorkerCore extends DefaultConsumer implements Closea
     /**
      * Starts this worker listening on a RabbitMQ queue.
      */
-    public void start() throws IOException {
+    public final void start() throws IOException {
         getChannel().basicQos(2);
         getChannel().queueDeclare(queue, true, false, false, null);
         getChannel().basicConsume(queue, false, "", true, false, null, this);
@@ -99,7 +99,7 @@ public abstract class CeleryWorkerCore extends DefaultConsumer implements Closea
     }
 
     @Override
-    public void handleDelivery(
+    public final void handleDelivery(
             String consumerTag, Envelope envelope,
             BasicProperties properties, byte[] body
     ) throws IOException {
@@ -186,7 +186,7 @@ public abstract class CeleryWorkerCore extends DefaultConsumer implements Closea
     }
 
     @Override
-    public void close() throws IOException {
+    public final void close() throws IOException {
         getChannel().abort();
         backend.close();
     }
