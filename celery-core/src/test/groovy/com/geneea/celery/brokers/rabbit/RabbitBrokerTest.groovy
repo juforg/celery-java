@@ -32,6 +32,20 @@ class RabbitBrokerTest extends Specification {
 
     }
 
+    def "it should publish messages on a 'test-queue'"() {
+
+        when:
+        message.setBody(body)
+        message.send("test-queue")
+
+        then:
+        1 * channel.basicPublish("", "test-queue", _, body);
+
+        where:
+        body << ["".bytes, (0..255) as byte[]] + Gen.string.take(5).collect {it.bytes}
+
+    }
+
     def "it should set content encoding"() {
 
         when:

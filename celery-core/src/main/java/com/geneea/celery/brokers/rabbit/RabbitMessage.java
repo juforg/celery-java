@@ -2,6 +2,7 @@ package com.geneea.celery.brokers.rabbit;
 
 import com.geneea.celery.spi.Message;
 
+import com.google.common.base.Strings;
 import com.rabbitmq.client.AMQP;
 
 import java.io.IOException;
@@ -50,8 +51,9 @@ class RabbitMessage implements Message {
 
     @Override
     public void send(String queue) throws IOException {
+        queue = Strings.isNullOrEmpty(queue) ? "celery" : queue;
         AMQP.BasicProperties messageProperties = props.headers(headers.map).build();
-        broker.channel.basicPublish("", "celery", messageProperties, body);
+        broker.channel.basicPublish("", queue, messageProperties, body);
     }
 
     class RabbitMessageHeaders implements Headers {
