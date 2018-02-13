@@ -1,17 +1,20 @@
 package com.geneea.celery;
 
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.google.common.base.Joiner;
-import com.google.common.base.Suppliers;
-import lombok.Builder;
-import lombok.extern.java.Log;
 import com.geneea.celery.backends.CeleryBackends;
 import com.geneea.celery.brokers.CeleryBrokers;
 import com.geneea.celery.spi.Backend;
 import com.geneea.celery.spi.Broker;
 import com.geneea.celery.spi.Message;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.google.common.base.Joiner;
+import com.google.common.base.Suppliers;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import lombok.Builder;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -19,17 +22,14 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.function.Supplier;
 
 /**
- * A client allowing you to submit a task and get a {@link Future} describing the result.
+ * A client allowing you to submit a task and get a {@link ListenableFuture} describing the result.
  */
-@Log
+@Slf4j
 public class Celery {
     private final String clientId = UUID.randomUUID().toString();
     private final String clientName = clientId + "@" + getLocalHostName();
@@ -41,7 +41,7 @@ public class Celery {
     //
     // This is tailored for the RabbitMQ connections - they fail to be created if the host can't be reached but they
     // can heal automatically. If other brokers/backends don't work this way, we might need to rework it.
-    private final Supplier<Optional<Backend.ResultsProvider>> resultsProvider;
+    private final Supplier<Optional<Backend.ResultsProvider<?>>> resultsProvider;
     private final Supplier<Broker> broker;
 
     /**
@@ -75,7 +75,7 @@ public class Celery {
                 return Optional.empty();
             }
 
-            Backend.ResultsProvider rp;
+            Backend.ResultsProvider<?> rp;
             try {
                 rp = CeleryBackends.create(backendUri, executorService)
                                    .resultsProviderFor(clientId);
@@ -87,7 +87,7 @@ public class Celery {
         });
     }
 
-    private String getLocalHostName() {
+    private static String getLocalHostName() {
         try {
             return InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException e) {
@@ -106,7 +106,7 @@ public class Celery {
      *
      * @throws IOException if the message couldn't be sent
      */
-    public AsyncResult<?> submit(Class<?> taskClass, String method, Object[] args) throws IOException {
+    public <T, R> ListenableFuture<R> submit(Class<T> taskClass, String method, Object[] args) throws IOException {
         return submit(taskClass.getName() + "#" + method, args);
     }
 
@@ -120,13 +120,13 @@ public class Celery {
      *
      * @throws IOException if the message couldn't be sent
      */
-    public AsyncResult<?> submit(String name, Object[] args) throws IOException {
+    public <R> ListenableFuture<R> submit(String name, Object[] args) throws IOException {
         // Get the provider early to increase the chance to find out there is a connection problem before actually
         // sending the message.
         //
         // This will help for example in the case when the connection can't be established at all. The connection may
         // still drop after sending the message but there isn't much we can do about it.
-        Optional<Backend.ResultsProvider> rp = resultsProvider.get();
+        Optional<Backend.ResultsProvider<?>> rp = resultsProvider.get();
         String taskId = UUID.randomUUID().toString();
 
         ArrayNode payload = jsonMapper.createArrayNode();
@@ -157,37 +157,12 @@ public class Celery {
 
         message.send(queue);
 
-        Future<Object> result;
         if (rp.isPresent()) {
-            result = rp.get().getResult(taskId);
+            @SuppressWarnings("unchecked")
+            Backend.ResultsProvider<R> provider = (Backend.ResultsProvider<R>) rp.get();
+            return provider.getResult(taskId);
         } else {
-            result = CompletableFuture.completedFuture(null);
-        }
-        return new AsyncResultImpl<>(result);
-    }
-
-    public interface AsyncResult<T> {
-        boolean isDone();
-
-        T get() throws ExecutionException, InterruptedException;
-    }
-
-    private class AsyncResultImpl<T> implements AsyncResult<T> {
-
-        private final Future<T> future;
-
-        AsyncResultImpl(Future<T> future) {
-            this.future = future;
-        }
-
-        @Override
-        public boolean isDone() {
-            return future.isDone();
-        }
-
-        @Override
-        public T get() throws ExecutionException, InterruptedException {
-            return future.get();
+            return Futures.immediateFuture(null);
         }
     }
 }

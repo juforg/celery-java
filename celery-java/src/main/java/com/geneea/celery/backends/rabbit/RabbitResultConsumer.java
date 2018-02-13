@@ -1,5 +1,8 @@
 package com.geneea.celery.backends.rabbit;
 
+import com.geneea.celery.WorkerException;
+import com.geneea.celery.backends.TaskResult;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -10,26 +13,18 @@ import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
-import com.geneea.celery.WorkerException;
-import com.geneea.celery.backends.TaskResult;
 
-import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-class RabbitResultConsumer extends DefaultConsumer implements RabbitBackend.ResultsProvider {
+class RabbitResultConsumer<R> extends DefaultConsumer implements RabbitBackend.ResultsProvider<R> {
 
-    private final LoadingCache<String, SettableFuture<Object>> tasks =
+    private final LoadingCache<String, SettableFuture<R>> tasks =
             CacheBuilder
                     .newBuilder()
                     .expireAfterWrite(2, TimeUnit.HOURS)
-                    .build(new CacheLoader<String, SettableFuture<Object>>() {
-                @Override
-                public SettableFuture<Object> load(@Nonnull String key) {
-                    return SettableFuture.create();
-                }
-            });
+                    .build(CacheLoader.from(SettableFuture::create));
     private final ObjectMapper jsonMapper = new ObjectMapper();
 
     RabbitResultConsumer(Channel channel) {
@@ -37,7 +32,7 @@ class RabbitResultConsumer extends DefaultConsumer implements RabbitBackend.Resu
     }
 
     @Override
-    public ListenableFuture<Object> getResult(String taskId) {
+    public ListenableFuture<R> getResult(String taskId) {
         return tasks.getUnchecked(taskId);
     }
 
@@ -47,13 +42,12 @@ class RabbitResultConsumer extends DefaultConsumer implements RabbitBackend.Resu
 
         TaskResult payload = jsonMapper.readValue(body, TaskResult.class);
 
-        SettableFuture<Object> future = tasks.getUnchecked(payload.taskId);
+        SettableFuture<R> future = tasks.getUnchecked(payload.taskId);
         boolean setAccepted;
         if (payload.status == TaskResult.Status.SUCCESS) {
-            setAccepted = future.set(payload.result);
+            setAccepted = future.set(payload.getResult());
         } else {
-            @SuppressWarnings("unchecked")
-            Map<String, String> exc = (Map<String, String>) payload.result;
+            Map<String, String> exc = payload.getResult();
             setAccepted = future.setException(
                     new WorkerException(exc.get("exc_type"), exc.get("exc_message")));
         }

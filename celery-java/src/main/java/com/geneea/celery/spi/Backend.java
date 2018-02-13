@@ -21,7 +21,7 @@ public interface Backend extends Closeable {
      * @return results provider returning task results
      * @throws IOException signalizes connection problem
      */
-    ResultsProvider resultsProviderFor(String clientId) throws IOException;
+    <R> ResultsProvider<R> resultsProviderFor(String clientId) throws IOException;
 
     /**
      * Report successful result of computation back to the client.
@@ -32,7 +32,7 @@ public interface Backend extends Closeable {
      * @param result the computation result (needs to be JSON serializable)
      * @throws IOException in case of connection problem
      */
-    void reportResult(String taskId, String queue, String correlationId, Object result) throws IOException;
+    <R> void reportResult(String taskId, String queue, String correlationId, R result) throws IOException;
 
     /**
      * Report erroneous result of computation back to the client.
@@ -48,11 +48,11 @@ public interface Backend extends Closeable {
     /**
      * A way to get notified about completion of the tasks.
      */
-    interface ResultsProvider {
+    interface ResultsProvider<R> {
         /**
          * @param taskId unique ID of the task, as used in {@link Message.Headers#setId(String)}
          * @return the computation result that completes when the result is retrieved from the queue
          */
-        ListenableFuture<Object> getResult(String taskId);
+        ListenableFuture<R> getResult(String taskId);
     }
 }

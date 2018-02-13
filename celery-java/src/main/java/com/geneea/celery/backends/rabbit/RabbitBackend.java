@@ -1,11 +1,12 @@
 package com.geneea.celery.backends.rabbit;
 
+import com.geneea.celery.backends.TaskResult;
+import com.geneea.celery.spi.Backend;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
-import com.geneea.celery.backends.TaskResult;
-import com.geneea.celery.spi.Backend;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -30,15 +31,16 @@ public class RabbitBackend implements Backend {
     }
 
     @Override
-    public ResultsProvider resultsProviderFor(String clientId) throws IOException {
+    public <R> ResultsProvider<R> resultsProviderFor(String clientId) throws IOException {
         channel.queueDeclare(clientId, false, false, true,
                 ImmutableMap.of("x-expires", 24 * 3600 * 1000));
-        RabbitResultConsumer consumer = new RabbitResultConsumer(channel);
+        RabbitResultConsumer<R> consumer = new RabbitResultConsumer<>(channel);
         channel.basicConsume(clientId, consumer);
         return consumer;
     }
 
-    public void reportResult(String taskId, String queue, String correlationId, Object result)
+    @Override
+    public <R> void reportResult(String taskId, String queue, String correlationId, R result)
             throws IOException {
 
         AMQP.BasicProperties properties = new AMQP.BasicProperties.Builder()
@@ -57,6 +59,7 @@ public class RabbitBackend implements Backend {
         channel.basicPublish("", queue, properties, jsonMapper.writeValueAsBytes(res));
     }
 
+    @Override
     public void reportException(String taskId, String replyTo, String correlationId, Throwable e) throws IOException {
         AMQP.BasicProperties properties = new AMQP.BasicProperties.Builder()
                 .correlationId(correlationId)
@@ -78,6 +81,7 @@ public class RabbitBackend implements Backend {
         channel.basicPublish("", replyTo, properties, jsonMapper.writeValueAsBytes(res));
     }
 
+    @Override
     public void close() throws IOException {
         channel.abort();
     }

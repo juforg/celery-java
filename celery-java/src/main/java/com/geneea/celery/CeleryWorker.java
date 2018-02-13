@@ -1,8 +1,9 @@
 
 package com.geneea.celery;
 
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.Parameter;
+import com.geneea.celery.backends.rabbit.RabbitBackend;
+import com.geneea.celery.spi.Backend;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,11 +18,9 @@ import com.google.common.primitives.Primitives;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
-import com.geneea.celery.backends.rabbit.RabbitBackend;
-import com.geneea.celery.spi.Backend;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -30,33 +29,24 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
  * CeleryWorker that listens on RabbitMQ queue and executes tasks. You can either embed it into your project via
- * {@link #create(String, Connection)} or start it stand-alone and supply your tasks on classpath like this:
- *
- * <pre>
- * java -cp celery-java-xyz.jar:your-tasks.jar com.geneea.celery.CeleryWorker --concurrency 8
- * </pre>
+ * {@link #create(String, Connection)} or start it stand-alone via {@link CeleryWorkerCLI}.
  */
+@Slf4j
 public class CeleryWorker extends DefaultConsumer {
 
-    private final ObjectMapper jsonMapper;
+    private final ObjectMapper jsonMapper = new ObjectMapper();
     private final Lock taskRunning = new ReentrantLock();
     private final Backend backend;
 
-    private static final Logger LOG = Logger.getLogger(CeleryWorker.class.getName());
-
-    public CeleryWorker(Channel channel, Backend backend) {
+    CeleryWorker(Channel channel, Backend backend) {
         super(channel);
         this.backend = backend;
-        jsonMapper = new ObjectMapper();
     }
 
     @Override
@@ -77,28 +67,27 @@ public class CeleryWorker extends DefaultConsumer {
                     (ArrayNode) payload.get(0),
                     (ObjectNode) payload.get(1));
 
-            LOG.info(String.format("CeleryTask %s[%s] succeeded in %s. Result was: %s",
-                    taskClassName, taskId, stopwatch, result));
+            log.info("CeleryTask {}[{}] succeeded in {}", taskClassName, taskId, stopwatch);
+            log.debug("CeleryTask {}[{}] result was: {}", taskClassName, taskId, result);
 
             backend.reportResult(taskId, properties.getReplyTo(), properties.getCorrelationId(), result);
 
             getChannel().basicAck(envelope.getDeliveryTag(), false);
         } catch (DispatchException e) {
-            LOG.log(Level.SEVERE, String.format("CeleryTask %s dispatch error", taskId), e.getCause());
+            log.error(String.format("CeleryTask %s dispatch error", taskId), e.getCause());
             backend.reportException(taskId, properties.getReplyTo(), properties.getCorrelationId(), e);
             getChannel().basicAck(envelope.getDeliveryTag(), false);
         } catch (InvocationTargetException e) {
-            LOG.log(Level.WARNING, String.format("CeleryTask %s error", taskId), e.getCause());
+            log.error(String.format("CeleryTask %s error", taskId), e.getCause());
             backend.reportException(taskId, properties.getReplyTo(), properties.getCorrelationId(), e.getCause());
             getChannel().basicAck(envelope.getDeliveryTag(), false);
         } catch (JsonProcessingException e) {
-            LOG.log(Level.SEVERE, String.format("CeleryTask %s - %s", taskId, e), e.getCause());
+            log.error(String.format("CeleryTask %s - processing error", taskId), e);
             backend.reportException(taskId, properties.getReplyTo(), properties.getCorrelationId(), e);
             getChannel().basicNack(envelope.getDeliveryTag(), false, false);
         } catch (RuntimeException e) {
-            LOG.log(Level.SEVERE, String.format("CeleryTask %s - %s", taskId, e), e);
-            backend.reportException(taskId, properties.getReplyTo(), properties.getCorrelationId(),
-                    e.getCause() != null ? e.getCause() : e);
+            log.error(String.format("CeleryTask %s - runtime error", taskId), e);
+            backend.reportException(taskId, properties.getReplyTo(), properties.getCorrelationId(), e.getCause() != null ? e.getCause() : e);
             getChannel().basicNack(envelope.getDeliveryTag(), false, false);
         } finally {
             taskRunning.unlock();
@@ -169,18 +158,6 @@ public class CeleryWorker extends DefaultConsumer {
                 }).findAny();
     }
 
-    private static class Args {
-
-        @Parameter(names = "--queue", description = "Celery queue to watch")
-        private String queue = "celery";
-
-        @Parameter(names = "--concurrency", description = "Number of concurrent tasks to process")
-        private int numWorkers = 2;
-
-        @Parameter(names = "--broker", description = "Broker URL, e. g. amqp://localhost//")
-        private String broker = "amqp://localhost/%2F";
-    }
-
     public static CeleryWorker create(String queue, Connection connection) throws IOException {
         final Channel channel = connection.createChannel();
         channel.basicQos(2);
@@ -199,28 +176,5 @@ public class CeleryWorker extends DefaultConsumer {
         }));
 
         return consumer;
-    }
-
-    public static void main(String[] argv) throws Exception {
-        Args args = new Args();
-        JCommander.newBuilder()
-                .addObject(args)
-                .build()
-                .parse(argv);
-
-        ConnectionFactory factory = new ConnectionFactory();
-        factory.setUri(args.broker);
-        Connection connection = factory.newConnection(Executors.newCachedThreadPool());
-
-        for (int i = 0; i < args.numWorkers; i++) {
-            create(args.queue, connection);
-        }
-
-        System.out.println(String.format("Started consuming tasks from queue %s.", args.queue));
-        System.out.println("Known tasks:");
-        for (String taskName : TaskRegistry.getRegisteredTaskNames()) {
-            System.out.print("  - ");
-            System.out.println(taskName);
-        }
     }
 }

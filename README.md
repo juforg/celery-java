@@ -72,15 +72,14 @@ Check out generated Javadoc at [http://crabhi.github.io/celery-java/apidocs/](ht
     }
 ```
 
-2. Run `Worker` with your tasks on classpath. You can directly use the `Worker` class or embed it into your `main`
-function.
+2. Run `CeleryWorker` with your tasks on classpath. You can directly use its CLI class or embed it into your `main` function.
 
 ```java
-    import com.geneea.celery.CeleryWorker;
+    import com.geneea.celery.CeleryWorkerCLI;
 
     public class MyWorker {
         public static void main(String[] args) throws Exception {
-            CeleryWorker.main(args);
+            CeleryWorkerCLI.main(args);
         }
     }
 ```
@@ -98,7 +97,7 @@ function.
     In [4]: %%timeit
        ...: app.signature("com.geneea.celery.examples.TestTask#sum", [1, 2]).delay().get()
        ...:
-    2.1 ms ± 170 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+    2.1 ms Â± 170 Âµs per loop (mean Â± std. dev. of 7 runs, 100 loops each)
 ```
 
 ## Calling Python task from Java
@@ -120,7 +119,7 @@ System.out.println(client.submit("tasks.add", new Object[]{1, 2}).get());
 
 The `@CeleryTask` annotation on a class `MyClass` causes `MyClassProxy` and `MyClassLoader` to be generated.
 `MyClassLoader` registers the task into the worker and `MyClassProxy` has all the task methods tweaked so they
-now return a `Future<...>` instead of the original type.
+now return a `ListenableFuture<...>` instead of the original type.
 
 To use the proxy, you need a Celery `Client`.
 

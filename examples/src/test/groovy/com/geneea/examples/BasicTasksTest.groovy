@@ -1,24 +1,16 @@
 package com.geneea.examples
 
-import com.rabbitmq.client.Connection
+import com.geneea.celery.Celery
+import com.geneea.celery.WorkerException
+import com.geneea.celery.examples.*
 import com.rabbitmq.client.ConnectionFactory
 import org.junit.Rule
 import org.rnorth.ducttape.unreliables.Unreliables
-import com.geneea.celery.Celery
-import com.geneea.celery.CeleryWorker
-import com.geneea.celery.WorkerException
-import com.geneea.celery.backends.rabbit.RabbitBackend
-import com.geneea.celery.brokers.rabbit.RabbitBroker
-import com.geneea.celery.examples.BadTaskProxy
-import com.geneea.celery.examples.TestTask
-import com.geneea.celery.examples.TestTaskProxy
-import com.geneea.celery.examples.TestVoidTaskProxy
 import org.testcontainers.containers.GenericContainer
 import spock.genesis.Gen
 import spock.lang.Specification
 
 import java.util.concurrent.ExecutionException
-import java.util.concurrent.Executors
 import java.util.concurrent.ForkJoinPool
 import java.util.concurrent.TimeUnit
 
@@ -54,7 +46,7 @@ class BasicTasksTest extends Specification {
         client = Celery.builder().brokerUri(rabbitUrl(rabbit, "amqp")).backendUri(rabbitUrl(rabbit, "rpc")).build()
 
         worker = Thread.start { it ->
-            CeleryWorker.main(["--broker", rabbitUrl(rabbit, "amqp")] as String[])
+            WorkerWithTestTasks.main(["--broker", rabbitUrl(rabbit, "amqp")] as String[])
         }
     }
 
