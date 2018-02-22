@@ -5,9 +5,9 @@ import com.geneea.celery.spi.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.TimeoutException
 
-class MockCeleryClient extends CeleryClientCore {
+class TestCeleryClient extends CeleryClientCore {
 
-    MockCeleryClient(String brokerUri, String backendUri, String queue) {
+    TestCeleryClient(String brokerUri, String backendUri, String queue) {
         super(brokerUri, backendUri, queue, null, null)
     }
 
