@@ -2,7 +2,6 @@ package com.geneea.celery.backends.rabbit;
 
 import com.geneea.celery.spi.BackendFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
@@ -32,7 +31,7 @@ public class RabbitBackendFactory implements BackendFactory {
     }
 
     @Override
-    public RabbitBackend createBackend(URI uri, ExecutorService executor, ObjectMapper jsonMapper) throws IOException, TimeoutException {
+    public RabbitBackend createBackend(URI uri, ExecutorService executor) throws IOException, TimeoutException {
         // Replace rpc:// -> amqp:// to be consistent with the Python API. The Python API uses rpc:// to designate AMQP
         // used in the manner of one return queue per client as opposed to one queue per returned message (the original
         // amqp:// protocol).
@@ -49,6 +48,6 @@ public class RabbitBackendFactory implements BackendFactory {
         }
 
         Connection connection = factory.newConnection(executor);
-        return new RabbitBackend(connection.createChannel(), jsonMapper);
+        return new RabbitBackend(connection.createChannel());
     }
 }

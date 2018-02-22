@@ -136,7 +136,7 @@ public abstract class CeleryClientCore implements Closeable {
 
                 if (factoryProtocols.contains(backendUri.getScheme())) {
                     ResultsProvider<?> rp = factory
-                            .createBackend(backendUri, executor, jsonMapper)
+                            .createBackend(backendUri, executor)
                             .resultsProviderFor(clientId);
                     return Optional.of(rp);
                 }

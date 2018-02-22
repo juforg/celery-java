@@ -34,7 +34,7 @@ class CeleryTest extends Specification {
         when:
         client.findBackends().each {
             if (it.protocols == ["mock"] as Set)
-                foundBackend = it.createBackend(null, null, null)
+                foundBackend = it.createBackend(null, null)
         }
         then:
         foundBackend == MockBackendFactory.backend

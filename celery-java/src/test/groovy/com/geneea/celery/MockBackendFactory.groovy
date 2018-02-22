@@ -1,6 +1,5 @@
 package com.geneea.celery
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.geneea.celery.spi.Backend
 import com.geneea.celery.spi.BackendFactory
 
@@ -16,7 +15,7 @@ public class MockBackendFactory implements BackendFactory {
     }
 
     @Override
-    Backend createBackend(URI uri, ExecutorService executor, ObjectMapper jsonMapper) throws IOException, TimeoutException {
+    Backend createBackend(URI uri, ExecutorService executor) throws IOException, TimeoutException {
         return backend
     }
 }
