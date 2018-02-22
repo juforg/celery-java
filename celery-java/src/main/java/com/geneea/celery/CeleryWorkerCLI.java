@@ -1,15 +1,13 @@
 package com.geneea.celery;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.security.GeneralSecurityException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeoutException;
 
@@ -37,17 +35,21 @@ public class CeleryWorkerCLI {
 
         final Connection connection;
         try {
-            final ConnectionFactory factory = new ConnectionFactory();
-            factory.setUri(broker);
-            connection = factory.newConnection(Executors.newCachedThreadPool());
-        } catch (URISyntaxException | GeneralSecurityException | IOException | TimeoutException e) {
+            connection = CeleryWorker.connect(broker, Executors.newCachedThreadPool());
+        } catch (IOException | TimeoutException | IllegalArgumentException e) {
             parser.handleError(new ArgumentParserException("bad \"broker\" argument", e, parser));
             System.exit(1);
             return;
         }
 
+        final ObjectMapper jsonMapper = new ObjectMapper();
         for (int i = 0; i < numWorkers; i++) {
-            CeleryWorker.create(queue, connection);
+            CeleryWorker.builder()
+                    .connection(connection)
+                    .queue(queue)
+                    .jsonMapper(jsonMapper)
+                    .build()
+                    .start();
         }
 
         System.out.printf("Started consuming tasks from queue %s.%n", queue);

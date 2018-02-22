@@ -1,8 +1,8 @@
 package com.geneea.celery.brokers.rabbit
 
+import com.geneea.celery.spi.Message
 import com.rabbitmq.client.BasicProperties
 import com.rabbitmq.client.Channel
-import com.geneea.celery.spi.Message
 import spock.genesis.Gen
 import spock.lang.Specification
 

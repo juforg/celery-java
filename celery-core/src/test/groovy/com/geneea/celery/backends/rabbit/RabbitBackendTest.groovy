@@ -1,20 +1,25 @@
 package com.geneea.celery.backends.rabbit
 
+import com.geneea.celery.WorkerException
 import com.rabbitmq.client.BasicProperties
 import com.rabbitmq.client.Channel
 import groovy.json.JsonSlurper
-import com.geneea.celery.WorkerException
 import spock.genesis.Gen
 import spock.lang.Specification
 
 import java.util.concurrent.ExecutionException
 
-
 class RabbitBackendTest extends Specification {
 
+    def Channel channel
+    def RabbitBackend backend
+
+    def setup() {
+        channel = Mock(Channel.class)
+        backend = new RabbitBackend(channel)
+    }
+
     def "Backend should use the RabbitResultConsumer"() {
-        def Channel channel = Mock(Channel.class)
-        def backend = new RabbitBackend(channel)
         def resultsProvider
         def consumerArg
 
@@ -31,8 +36,6 @@ class RabbitBackendTest extends Specification {
     }
 
     def "Backend should report successful result"() {
-        def Channel channel = Mock(Channel.class)
-        def backend = new RabbitBackend(channel)
         def BasicProperties props
         def result
 
@@ -56,8 +59,6 @@ class RabbitBackendTest extends Specification {
     }
 
     def "Backend should report exception"() {
-        def Channel channel = Mock(Channel.class)
-        def backend = new RabbitBackend(channel)
         def BasicProperties props
         def result
 
@@ -84,9 +85,17 @@ class RabbitBackendTest extends Specification {
 
 class RabbitResultConsumerTest extends Specification {
 
+    def Channel channel
+    def RabbitBackend backend
+    def RabbitResultConsumer consumer
+
+    def setup() {
+        channel = Mock(Channel.class)
+        backend = new RabbitBackend(channel)
+        consumer = new RabbitResultConsumer(backend)
+    }
+
     def "Consumer should report result of a task"() {
-        def Channel channel = Mock(Channel.class)
-        def consumer = new RabbitResultConsumer(channel)
         def result = consumer.getResult(taskId)
 
         when:
@@ -106,8 +115,6 @@ class RabbitResultConsumerTest extends Specification {
     }
 
     def "Consumer should report a received error"() {
-        def Channel channel = Mock(Channel.class)
-        def consumer = new RabbitResultConsumer(channel)
         def result = consumer.getResult("1aa")
         def ex
 

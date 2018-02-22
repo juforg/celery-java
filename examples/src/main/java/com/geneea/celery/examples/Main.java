@@ -1,10 +1,11 @@
 package com.geneea.celery.examples;
 
+import com.geneea.celery.Celery;
+import com.geneea.celery.CeleryWorker;
+
 import com.google.common.base.Stopwatch;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
-import com.geneea.celery.Celery;
-import com.geneea.celery.CeleryWorker;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -17,7 +18,10 @@ public class Main {
         ExecutorService executor = Executors.newCachedThreadPool();
         Connection connection = factory.newConnection(executor);
 
-        CeleryWorker worker = CeleryWorker.create("celery", connection);
+        CeleryWorker.builder()
+                .connection(connection)
+                .build()
+                .start();
 
         Celery client = Celery.builder()
                 .brokerUri("amqp://localhost/%2F")
@@ -36,8 +40,6 @@ public class Main {
             client.submit(TestTask.class, "sum", new Object[]{"a", "b"}).get();
         } finally {
             connection.close();
-            worker.close();
-            worker.join();
             executor.shutdown();
         }
 

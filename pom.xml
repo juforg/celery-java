@@ -9,6 +9,7 @@
     <version>1.7-SNAPSHOT</version>
 
     <modules>
+        <module>celery-core</module>
         <module>celery-java</module>
         <module>examples</module>
     </modules>
@@ -207,6 +208,11 @@
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpclient</artifactId>
                 <version>4.5.5</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpcore</artifactId>
+                <version>4.4.9</version>
             </dependency>
 
             <!-- Argument parser -->

@@ -23,32 +23,40 @@ import java.util.Map;
  */
 public class RabbitBackend implements Backend {
 
-    private final Channel channel;
-    private final ObjectMapper jsonMapper = new ObjectMapper();
+    private static final String CONTENT_TYPE = "application/json";
+    private static final String ENCODING = "utf-8";
+    private static final ImmutableMap<String, Object> QUEUE_ARGS = ImmutableMap.of(
+            "x-expires", 24 * 3600 * 1000
+    );
+
+    final Channel channel;
+    final ObjectMapper jsonMapper;
+
+    public RabbitBackend(Channel channel, ObjectMapper jsonMapper) {
+        this.channel = channel;
+        this.jsonMapper = jsonMapper;
+    }
 
     public RabbitBackend(Channel channel) {
-        this.channel = channel;
+        this(channel, new ObjectMapper());
     }
 
     @Override
     public <R> ResultsProvider<R> resultsProviderFor(String clientId) throws IOException {
-        channel.queueDeclare(clientId, false, false, true,
-                ImmutableMap.of("x-expires", 24 * 3600 * 1000));
-        RabbitResultConsumer<R> consumer = new RabbitResultConsumer<>(channel);
+        channel.queueDeclare(clientId, false, false, true, QUEUE_ARGS);
+        RabbitResultConsumer<R> consumer = new RabbitResultConsumer<>(this);
         channel.basicConsume(clientId, consumer);
         return consumer;
     }
 
     @Override
-    public <R> void reportResult(String taskId, String queue, String correlationId, R result)
-            throws IOException {
-
+    public <R> void reportResult(String taskId, String queue, String correlationId, R result) throws IOException {
         AMQP.BasicProperties properties = new AMQP.BasicProperties.Builder()
                 .correlationId(correlationId)
                 .priority(0)
                 .deliveryMode(1)
-                .contentType("application/json")
-                .contentEncoding("utf-8")
+                .contentType(CONTENT_TYPE)
+                .contentEncoding(ENCODING)
                 .build();
 
         TaskResult res = new TaskResult();
@@ -65,8 +73,8 @@ public class RabbitBackend implements Backend {
                 .correlationId(correlationId)
                 .priority(0)
                 .deliveryMode(1)
-                .contentType("application/json")
-                .contentEncoding("utf-8")
+                .contentType(CONTENT_TYPE)
+                .contentEncoding(ENCODING)
                 .build();
 
         Map<String, String> excInfo = new HashMap<>();

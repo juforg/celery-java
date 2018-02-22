@@ -6,7 +6,7 @@ import java.io.Closeable;
 import java.io.IOException;
 
 /**
- * <i>Internal, used by {@link com.geneea.celery.Celery} and implemented by backend providers.</i>
+ * <i>Internal, used by {@link com.geneea.celery.CeleryClientCore} and implemented by backend providers.</i>
  *
  * <p>
  *     Backend, in Celery terminology, is a way to deliver task results back to the client.
@@ -15,7 +15,7 @@ import java.io.IOException;
 public interface Backend extends Closeable {
 
     /**
-     * The client ({@link com.geneea.celery.Celery}) uses this method to subscribe to results of the tasks it sends.
+     * The client uses this method to subscribe to results of the tasks it sends.
      *
      * @param clientId your unique client ID
      * @return results provider returning task results
@@ -49,10 +49,16 @@ public interface Backend extends Closeable {
      * A way to get notified about completion of the tasks.
      */
     interface ResultsProvider<R> {
+
         /**
          * @param taskId unique ID of the task, as used in {@link Message.Headers#setId(String)}
          * @return the computation result that completes when the result is retrieved from the queue
          */
         ListenableFuture<R> getResult(String taskId);
+
+        /**
+         * @return the parent backend instance
+         */
+        Backend getBackend();
     }
 }

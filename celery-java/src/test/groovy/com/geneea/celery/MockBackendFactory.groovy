@@ -6,7 +6,6 @@ import com.geneea.celery.spi.BackendFactory
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.TimeoutException
 
-
 public class MockBackendFactory implements BackendFactory {
     static backend
 

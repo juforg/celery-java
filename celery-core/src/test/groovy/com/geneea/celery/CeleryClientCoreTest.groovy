@@ -1,16 +1,16 @@
 package com.geneea.celery
 
-import com.google.common.util.concurrent.SettableFuture
-import groovy.json.JsonSlurper
 import com.geneea.celery.spi.Backend
 import com.geneea.celery.spi.Broker
 import com.geneea.celery.spi.Message
+import com.google.common.util.concurrent.SettableFuture
+import groovy.json.JsonSlurper
 import spock.genesis.Gen
 import spock.lang.Specification
 
 class ClientTest extends Specification {
 
-    def Celery client
+    def TestCeleryClient client
 
     def Message message
     def Message.Headers headers
@@ -24,11 +24,10 @@ class ClientTest extends Specification {
         message.getHeaders() >> headers
         MockBrokerFactory.messages = [message]
 
-        client = Celery.builder().brokerUri("mock://anything").build()
+        client = new TestCeleryClient("mock://anything", null, null)
     }
 
     def "Client should send UTF-8 encoded JSON payload by default"() {
-
         when:
         client.submit(TestingTask.class, "doWork", [0.5, new Payload(prop1: "p1val")] as Object[])
 
@@ -65,7 +64,7 @@ class ClientTest extends Specification {
     }
 
     def "Client should send message to the right queue"() {
-        client = Celery.builder().brokerUri("mock://broker").queue(queue).build()
+        client = new TestCeleryClient("mock://broker", null, queue)
         when:
         client.submit(TestingTask.class, "doWork", [0.5, new Payload(prop1: "p1val")] as Object[])
         then:
@@ -110,7 +109,7 @@ class ClientTest extends Specification {
 
 class ClientWithBackendTest extends Specification {
 
-    def Celery client
+    def TestCeleryClient client
     def Broker broker
 
     def Message message
@@ -133,14 +132,14 @@ class ClientWithBackendTest extends Specification {
         backend.resultsProviderFor(_) >> resultsProvider
         MockBackendFactory.backend = backend
 
-        client = Celery.builder().brokerUri("mock://x").backendUri("mock://something").build()
+        client = new TestCeleryClient("mock://x", "mock://something", null)
     }
 
     def "Client ID and task ID should be different for each client"() {
         def clientIds = [], taskIds = []
         when:
         (1..10).each {
-            client = Celery.builder().brokerUri("mock://x").backendUri("mock://something").build()
+            client = new TestCeleryClient("mock://x", "mock://something", null)
             client.submit(TestingTask.class, "doWork", [0.5, new Payload(prop1: "p1val")] as Object[])
         }
         then:
@@ -202,7 +201,7 @@ class ClientWithBackendTest extends Specification {
 
     def "Client should declare queue before sending its message"() {
         when:
-        client = Celery.builder().brokerUri("mock://x").queue(queue).build()
+        client = new TestCeleryClient("mock://x", null, queue)
         client.submit(TestingTask.class, "doWork", [0.5, new Payload(prop1: "p1val")] as Object[])
 
         then:
@@ -218,13 +217,13 @@ class ClientWithBackendTest extends Specification {
 
 class MultiMessageTest extends Specification {
     def Broker broker
-    def Celery client
+    def TestCeleryClient client
 
     def messages = []
 
     def setup() {
         broker = Mock(Broker)
-        client = Celery.builder().brokerUri("mock://xyz").build()
+        client = new TestCeleryClient("mock://xyz", null, null)
 
         (0..5).each {
             def message = Mock(Message.class)
