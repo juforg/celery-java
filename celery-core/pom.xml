@@ -8,7 +8,7 @@
     <parent>
         <groupId>com.geneea.celery</groupId>
         <artifactId>celery-java-parent</artifactId>
-        <version>1.8-SNAPSHOT</version>
+        <version>1.8</version>
     </parent>
 
     <name>Celery-Core</name>
