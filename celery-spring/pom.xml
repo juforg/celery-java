@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>celery-spring</artifactId>
+    <packaging>jar</packaging>
+
+    <parent>
+        <groupId>com.geneea.celery</groupId>
+        <artifactId>celery-java-parent</artifactId>
+        <version>1.10-SNAPSHOT</version>
+    </parent>
+
+    <name>Celery-Java Spring</name>
+    <description>
+        Java library for interfacing with http://celeryproject.org including code
+        for both task submissions and task execution.
+    </description>
+    <url>https://bitbucket.org/geneea/celery-java</url>
+
+    <properties>
+        <artifactory.url>https://artifactory.geneea.com/artifactory</artifactory.url>
+
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+
+        <spring.version>5.0.4.RELEASE</spring.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.geneea.celery</groupId>
+            <artifactId>celery-core</artifactId>
+            <version>1.10-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
+            <version>1.7.10</version>
+        </dependency>
+
+        <!-- Spring -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+    </dependencies>
+</project>
