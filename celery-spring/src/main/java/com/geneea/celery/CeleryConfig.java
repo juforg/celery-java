@@ -6,7 +6,7 @@ import java.util.concurrent.ExecutorService;
 
 /**
  * Special configuration for the Celery-Spring library. It can be used to specify
- * various parameters and options.
+ * various parameters and options, specially the {@link #workersEnabled} option.
  * <p>
  * It needs to exist as a {@code @Bean} or {@code @Component} in the Spring context!
  */

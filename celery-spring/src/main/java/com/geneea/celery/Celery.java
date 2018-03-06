@@ -16,7 +16,10 @@ import java.util.List;
 /**
  * A client allowing you to submit a task and get a {@link ListenableFuture} describing the result.
  * <p>
- * ....
+ * Use the {@link CeleryTask @CeleryTask} annotation to have auto-generated proxies for tasks.
+ * Such proxies then can be used for executing tasks remotely using a types-safe API.
+ *
+ * @see CeleryTaskProxy
  */
 @Lazy
 @Component

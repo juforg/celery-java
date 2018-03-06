@@ -14,8 +14,8 @@ import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 /**
- * When configured ({@link CeleryConfig#workersEnabled()}), it creates and starts
- * the required number of {@link CeleryWorker CeleryWorker} instances.
+ * Internal, when configured ({@link CeleryConfig#workersEnabled()}), it creates
+ * and starts the required number of {@link CeleryWorker CeleryWorker} instances.
  */
 @Slf4j
 @Component

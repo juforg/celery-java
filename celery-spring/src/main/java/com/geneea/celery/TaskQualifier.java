@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
  * Internal, enables {@link CeleryTask} autowiring via this meta-annotation.
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.ANNOTATION_TYPE})
+@Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.CONSTRUCTOR, ElementType.ANNOTATION_TYPE})
 @Qualifier
 @interface TaskQualifier {
 

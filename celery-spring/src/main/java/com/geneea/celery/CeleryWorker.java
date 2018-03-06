@@ -15,6 +15,8 @@ import java.io.IOException;
  * as {@link CeleryConfig} bean. Then the workers are started automatically.
  * <p>
  * The tasks which it can execute need to be annotated by {@link CeleryTask @CeleryTask}.
+ *
+ * @see CeleryTaskRegistry
  */
 public class CeleryWorker extends CeleryWorkerCore {
 

@@ -23,9 +23,14 @@ public class CeleryTaskRegistry {
 
     private final ImmutableMap<String, ?> tasks;
 
-    public CeleryTaskRegistry(
-            @Autowired(required = false) @TaskQualifier final List<Object> taskObjects
-    ) {
+    // just as a fall-back
+    public CeleryTaskRegistry() {
+        this(null);
+    }
+
+    @TaskQualifier
+    @Autowired(required = false)
+    public CeleryTaskRegistry(final List<Object> taskObjects) {
         tasks = taskObjects == null ? ImmutableMap.of() : taskObjects.stream()
                 .filter(t -> validateTaskClass(t.getClass()))
                 .collect(toImmutableMap(t -> t.getClass().getName(), Function.identity()));
@@ -54,8 +59,22 @@ public class CeleryTaskRegistry {
         return ImmutableList.copyOf(tasks.values());
     }
 
+    /**
+     * Finds a task by its full class-name, e.g. {@code org.example.MyTask}.
+     * @param taskName the task name (full class-name)
+     * @return the specified task object if available, otherwise {@code null}
+     */
     @SuppressWarnings("unchecked")
     public <T> T getTask(final String taskName) {
         return (T) tasks.get(taskName);
+    }
+
+    /**
+     * Finds a task by its class-name, e.g. {@code org.example.MyTask}.
+     * @param taskClass the task class-name
+     * @return the specified task object if available, otherwise {@code null}
+     */
+    public <T> T getTask(final Class<T> taskClass) {
+        return getTask(taskClass.getName());
     }
 }
