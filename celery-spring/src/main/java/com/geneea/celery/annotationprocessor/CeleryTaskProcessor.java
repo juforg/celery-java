@@ -170,9 +170,17 @@ public class CeleryTaskProcessor extends AbstractProcessor {
      * </code></pre>
      */
     static final class AddProxiedMethods extends ElementScanner8<Void, TypeSpec.Builder> {
+
+        static boolean shouldBeProxied(final ExecutableElement method) {
+            final Set<Modifier> modifiers = method.getModifiers();
+            return method.getKind() == ElementKind.METHOD
+                    && modifiers.contains(Modifier.PUBLIC)
+                    && !modifiers.contains(Modifier.STATIC);
+        }
+
         @Override
         public Void visitExecutable(final ExecutableElement method, final TypeSpec.Builder builder) {
-            if (method.getKind() == ElementKind.METHOD && method.getModifiers().contains(Modifier.PUBLIC)) {
+            if (shouldBeProxied(method)) {
                 final MethodSpec.Builder methodBuilder = MethodSpec
                         .methodBuilder(method.getSimpleName().toString())
                         .addModifiers(Modifier.PUBLIC, Modifier.FINAL)

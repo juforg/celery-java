@@ -15,12 +15,12 @@ import org.springframework.context.annotation.Lazy;
 public class RabbitServices {
 
     @Bean
-    public RabbitBackendFactory backendFactory() {
+    public RabbitBackendFactory rabbitBackendFactory() {
         return new RabbitBackendFactory();
     }
 
     @Bean
-    public RabbitBrokerFactory brokerFactory() {
+    public RabbitBrokerFactory rabbitBrokerFactory() {
         return new RabbitBrokerFactory();
     }
 

@@ -1,5 +1,6 @@
 package com.geneea.celery;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,11 +23,10 @@ public class CeleryTaskRegistry {
 
     private final ImmutableMap<String, ?> tasks;
 
-    @Autowired
     public CeleryTaskRegistry(
-            @TaskQualifier final List<?> taskObjects
+            @Autowired(required = false) @TaskQualifier final List<Object> taskObjects
     ) {
-        tasks = taskObjects.stream()
+        tasks = taskObjects == null ? ImmutableMap.of() : taskObjects.stream()
                 .filter(t -> validateTaskClass(t.getClass()))
                 .collect(toImmutableMap(t -> t.getClass().getName(), Function.identity()));
 
@@ -45,6 +45,13 @@ public class CeleryTaskRegistry {
             log.error("bad Celery task object, missing @CeleryTask annotation on {}", taskClass);
             return false;
         }
+    }
+
+    /**
+     * @return all known <em>CeleryTask</em> instances
+     */
+    public ImmutableList<?> knownTasks() {
+        return ImmutableList.copyOf(tasks.values());
     }
 
     @SuppressWarnings("unchecked")
