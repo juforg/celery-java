@@ -17,10 +17,12 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkState;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Implementation of RabbitMQ consumer as a result provider for {@link RabbitBackend}.
  */
+@Slf4j
 class RabbitResultConsumer<R> extends DefaultConsumer implements RabbitBackend.ResultsProvider<R> {
 
     private final RabbitBackend backend;
@@ -42,17 +44,27 @@ class RabbitResultConsumer<R> extends DefaultConsumer implements RabbitBackend.R
     public void handleDelivery(
             String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body
     ) throws IOException {
-        TaskResult payload = backend.jsonMapper.readValue(body, TaskResult.class);
+        SettableFuture<R> future = null;
+        try {
+            TaskResult payload = backend.jsonMapper.readValue(body, TaskResult.class);
 
-        SettableFuture<R> future = tasks.getUnchecked(payload.taskId);
-        boolean setAccepted;
-        if (payload.status == TaskResult.Status.SUCCESS) {
-            setAccepted = future.set(payload.getResult());
-        } else {
-            Map<String, String> exc = payload.getResult();
-            setAccepted = future.setException(new WorkerException(exc.get("exc_type"), exc.get("exc_message")));
+            future = tasks.getUnchecked(payload.taskId);
+            boolean setAccepted;
+            if (payload.status == TaskResult.Status.SUCCESS) {
+                setAccepted = future.set(payload.getResult());
+            } else {
+                Map<String, String> exc = payload.getResult();
+                setAccepted = future.setException(new WorkerException(exc.get("exc_type"), exc.get("exc_message")));
+            }
+            checkState(setAccepted, "setting future was not accepted: %s", future);
+            getChannel().basicAck(envelope.getDeliveryTag(), false);
+        } catch (IOException | RuntimeException e) {
+            if (future != null) {
+                future.setException(e);
+            }
+            log.error(String.format("ResultsConsumer error - %s", envelope.getDeliveryTag()), e);
+            getChannel().basicNack(envelope.getDeliveryTag(), false, false);
         }
-        checkState(setAccepted, "setting future was not accepted: %s", future);
     }
 
     @Override

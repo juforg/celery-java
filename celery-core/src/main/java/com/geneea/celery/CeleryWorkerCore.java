@@ -84,7 +84,8 @@ public abstract class CeleryWorkerCore extends DefaultConsumer implements Closea
      * Starts this worker listening on a RabbitMQ queue.
      */
     public final void start() throws IOException {
-        getChannel().basicQos(2);
+        // max number of unacknowledged messages "in-filght" from the queue to the consumer
+        getChannel().basicQos(2, false);
         getChannel().queueDeclare(queue, true, false, false, null);
         getChannel().basicConsume(queue, false, "", true, false, null, this);
 

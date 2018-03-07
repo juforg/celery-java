@@ -3,6 +3,7 @@ package com.geneea.celery.backends.rabbit
 import com.geneea.celery.WorkerException
 import com.rabbitmq.client.BasicProperties
 import com.rabbitmq.client.Channel
+import com.rabbitmq.client.Envelope
 import groovy.json.JsonSlurper
 import spock.genesis.Gen
 import spock.lang.Specification
@@ -99,7 +100,7 @@ class RabbitResultConsumerTest extends Specification {
         def result = consumer.getResult(taskId)
 
         when:
-        consumer.handleDelivery(null, null, null, body.bytes)
+        consumer.handleDelivery(null, new Envelope(1, false, "", ""), null, body.bytes)
 
         then:
         result.isDone() == done
@@ -119,7 +120,7 @@ class RabbitResultConsumerTest extends Specification {
         def ex
 
         when:
-        consumer.handleDelivery(null, null, null, body.bytes)
+        consumer.handleDelivery(null, new Envelope(1, false, "", ""), null, body.bytes)
 
         then:
         result.isDone()
