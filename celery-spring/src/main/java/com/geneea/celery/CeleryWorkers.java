@@ -41,7 +41,7 @@ class CeleryWorkers {
 
     @PostConstruct
     void startWorkers() {
-        if (config.workersEnabled()) {
+        if (config.workersEnabled() && config.getNumOfWorkers() > 0) {
             final String uri = config.getBrokerUri();
             final Connection connection;
             try {
@@ -67,7 +67,7 @@ class CeleryWorkers {
             }
             log.info("started {} CeleryWorkers for URI=\"{}\"", config.getNumOfWorkers(), uri);
         } else {
-            log.debug("no workers are started since \"workersEnabled\"=false");
+            log.debug("no workers are started since \"workersEnabled\"=false or \"numOfWorkers\" < 0");
         }
     }
 
