@@ -41,6 +41,7 @@ class BasicTasksTest extends Specification {
     ExamplesApplication app
 
     def setup() {
+        System.setProperty(ExamplesApplication.RABBIT_HOST_SYS_PROP, rabbitHost(rabbit))
         app = ExamplesApplication.startSpringApp()
     }
 

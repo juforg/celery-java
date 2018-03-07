@@ -9,9 +9,15 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
+/**
+ * An example application demonstrating usage of the Celery-Spring library.
+ */
 @EnableCelery
 @SpringBootApplication
 public class ExamplesApplication {
+
+    public static final String RABBIT_HOST_SYS_PROP = "rabbitmq.host";
+    public static final String RABBIT_HOST_DEFAULT = "localhost";
 
     @Autowired
     public TestTask testTasky;
@@ -28,6 +34,10 @@ public class ExamplesApplication {
     @Autowired
     public BadTaskProxy badTaskProxy;
 
+    public static String getRabbitHost() {
+        return System.getProperty(RABBIT_HOST_SYS_PROP, RABBIT_HOST_DEFAULT);
+    }
+
     public static void main(final String[] args) {
         startSpringApp(args);
     }
@@ -38,16 +48,16 @@ public class ExamplesApplication {
     }
 
     @Component
-    public class ExamplesCeleryConfig implements CeleryConfig {
+    public static class ExamplesCeleryConfig implements CeleryConfig {
 
         @Override
         public String getBrokerUri() {
-            return "amqp://localhost/%2F";
+            return "amqp://" + getRabbitHost() + "/%2F";
         }
 
         @Override
         public String getBackendUri() {
-            return "rpc://localhost/%2F";
+            return "rpc://" + getRabbitHost() + "/%2F";
         }
 
         @Override
