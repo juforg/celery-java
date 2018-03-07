@@ -3,6 +3,7 @@ package com.geneea.examples
 import com.geneea.celery.WorkerException
 import com.geneea.celery.examples.ExamplesApplication
 import com.rabbitmq.client.ConnectionFactory
+import com.rabbitmq.client.impl.ForgivingExceptionHandler
 import org.junit.Rule
 import org.rnorth.ducttape.unreliables.Unreliables
 import org.testcontainers.containers.GenericContainer
@@ -27,6 +28,9 @@ class BasicTasksTest extends Specification {
         protected void waitUntilReady() {
             def f = new ConnectionFactory()
             f.uri = "amqp://guest:guest@${rabbitHost(container)}/%2F"
+            f.exceptionHandler = new ForgivingExceptionHandler() {
+                void log(String message, Throwable e) {} // don't log anything
+            }
             Unreliables.retryUntilSuccess(startupTimeout.seconds as int, TimeUnit.SECONDS, {
                 f.newConnection(ForkJoinPool.commonPool())
             })
