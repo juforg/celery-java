@@ -43,7 +43,7 @@ public class RabbitBackend implements Backend {
 
     @Override
     public <R> ResultsProvider<R> resultsProviderFor(String clientId) throws IOException {
-        // max number of unacknowledged messages "in-filght" from the queue to the consumer
+        // max number of unacknowledged messages "in-flight" from the queue to the consumer
         channel.basicQos(2, false);
         channel.queueDeclare(clientId, false, false, true, QUEUE_ARGS);
         RabbitResultConsumer<R> consumer = new RabbitResultConsumer<>(this);
