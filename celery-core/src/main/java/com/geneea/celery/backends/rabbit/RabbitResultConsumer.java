@@ -16,11 +16,12 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static com.google.common.base.Preconditions.checkState;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Implementation of RabbitMQ consumer as a result provider for {@link RabbitBackend}.
  */
+@Slf4j
 class RabbitResultConsumer<R> extends DefaultConsumer implements RabbitBackend.ResultsProvider<R> {
 
     private final RabbitBackend backend;
@@ -42,7 +43,14 @@ class RabbitResultConsumer<R> extends DefaultConsumer implements RabbitBackend.R
     public void handleDelivery(
             String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body
     ) throws IOException {
-        TaskResult payload = backend.jsonMapper.readValue(body, TaskResult.class);
+        TaskResult payload;
+        try {
+            payload = backend.jsonMapper.readValue(body, TaskResult.class);
+        } catch (IOException e) {
+            log.error(String.format("could not read payload for deliveryTag=%d", envelope.getDeliveryTag()), e);
+            getChannel().basicNack(envelope.getDeliveryTag(), false, false);
+            return;
+        }
 
         SettableFuture<R> future = tasks.getUnchecked(payload.taskId);
         boolean setAccepted;
@@ -52,7 +60,13 @@ class RabbitResultConsumer<R> extends DefaultConsumer implements RabbitBackend.R
             Map<String, String> exc = payload.getResult();
             setAccepted = future.setException(new WorkerException(exc.get("exc_type"), exc.get("exc_message")));
         }
-        checkState(setAccepted, "setting future was not accepted: %s", future);
+
+        if (setAccepted) {
+            getChannel().basicAck(envelope.getDeliveryTag(), false);
+        } else {
+            log.error("setting future was not accepted for deliveryTag={}", envelope.getDeliveryTag());
+            getChannel().basicNack(envelope.getDeliveryTag(), false, false);
+        }
     }
 
     @Override

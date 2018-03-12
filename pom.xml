@@ -5,7 +5,7 @@
     <groupId>com.geneea.celery</groupId>
     <artifactId>celery-java-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.10-SNAPSHOT</version>
+    <version>1.10.1-SNAPSHOT</version>
 
     <modules>
         <module>celery-core</module>
