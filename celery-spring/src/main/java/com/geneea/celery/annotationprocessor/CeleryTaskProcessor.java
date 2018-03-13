@@ -59,7 +59,7 @@ public class CeleryTaskProcessor extends AbstractProcessor {
         for (Element element : roundEnv.getElementsAnnotatedWith(CeleryTask.class)) {
             try {
                 processElement(element);
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 // we should not allow any exceptions to propagate to the compiler
                 printError("unexpected error while processing an element", e, element);
             }
@@ -67,7 +67,7 @@ public class CeleryTaskProcessor extends AbstractProcessor {
         return true;
     }
 
-    private void printError(final String msg, final Throwable e, final Element element) {
+    private void printError(final String msg, final Exception e, final Element element) {
         final StringBuilder sb = new StringBuilder();
         sb.append("Error in processing @CeleryTask: ").append(msg);
         if (e != null) {

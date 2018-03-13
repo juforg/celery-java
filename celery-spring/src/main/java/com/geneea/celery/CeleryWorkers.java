@@ -67,7 +67,7 @@ class CeleryWorkers {
             }
             log.info("started {} CeleryWorkers for URI=\"{}\"", config.getNumOfWorkers(), uri);
         } else {
-            log.debug("no workers are started since \"workersEnabled\"=false or \"numOfWorkers\" < 0");
+            log.debug("no workers are started since \"workersEnabled\"=false or \"numOfWorkers\" < 1");
         }
     }
 

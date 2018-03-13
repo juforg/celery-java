@@ -25,4 +25,11 @@ class CeleryTaskProcessorTest extends Specification {
             .generatesSources(JavaFileObjects.forResource("expected/TestTaskInterfaceProxy.java"))
     }
 
+    def "test @CeleryTask proxy generating failure"() {
+        expect:
+        assertThat(JavaFileObjects.forResource("test/TestTaskFailure.java"))
+            .processedWith(new CeleryTaskProcessor())
+            .failsToCompile()
+            .withErrorContaining("the element can not be nested class")
+    }
 }
