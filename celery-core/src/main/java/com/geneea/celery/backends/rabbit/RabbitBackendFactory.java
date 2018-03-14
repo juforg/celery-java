@@ -48,6 +48,6 @@ public class RabbitBackendFactory implements BackendFactory {
         }
 
         Connection connection = factory.newConnection(executor);
-        return new RabbitBackend(connection.createChannel());
+        return new RabbitBackend(connection.createChannel(), executor);
     }
 }

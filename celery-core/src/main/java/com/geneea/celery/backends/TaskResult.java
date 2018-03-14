@@ -2,6 +2,7 @@ package com.geneea.celery.backends;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.List;
 
@@ -13,15 +14,10 @@ public class TaskResult {
 
     public List<?> children;
     public Status status;
-    public Object result;
+    public JsonNode result;
     public Object traceback;
     @JsonProperty("task_id")
     public String taskId;
-
-    @SuppressWarnings("unchecked")
-    public <R> R getResult() {
-        return (R) result;
-    }
 
     public enum Status {
         SUCCESS,

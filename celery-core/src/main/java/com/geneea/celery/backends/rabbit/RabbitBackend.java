@@ -9,8 +9,8 @@ import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * <p>
@@ -31,22 +31,32 @@ public class RabbitBackend implements Backend {
 
     final Channel channel;
     final ObjectMapper jsonMapper;
+    final ExecutorService executor;
+
+    public RabbitBackend(Channel channel, ObjectMapper jsonMapper, ExecutorService executor) {
+        this.channel = channel;
+        this.jsonMapper = jsonMapper != null ? jsonMapper : new ObjectMapper();
+        this.executor = executor != null ? executor : Executors.newCachedThreadPool();
+    }
 
     public RabbitBackend(Channel channel, ObjectMapper jsonMapper) {
-        this.channel = channel;
-        this.jsonMapper = jsonMapper;
+        this(channel, jsonMapper, null);
+    }
+
+    public RabbitBackend(Channel channel, ExecutorService executor) {
+        this(channel, null, executor);
     }
 
     public RabbitBackend(Channel channel) {
-        this(channel, new ObjectMapper());
+        this(channel, null, null);
     }
 
     @Override
-    public <R> ResultsProvider<R> resultsProviderFor(String clientId) throws IOException {
+    public ResultsProvider resultsProviderFor(String clientId) throws IOException {
         // max number of unacknowledged messages "in-flight" from the queue to the consumer
         channel.basicQos(2, false);
         channel.queueDeclare(clientId, false, false, true, QUEUE_ARGS);
-        RabbitResultConsumer<R> consumer = new RabbitResultConsumer<>(this);
+        RabbitResultConsumer consumer = new RabbitResultConsumer(this);
         channel.basicConsume(clientId, consumer);
         return consumer;
     }
@@ -62,7 +72,7 @@ public class RabbitBackend implements Backend {
                 .build();
 
         TaskResult res = new TaskResult();
-        res.result = result;
+        res.result = jsonMapper.valueToTree(result);
         res.taskId = taskId;
         res.status = TaskResult.Status.SUCCESS;
 
@@ -79,12 +89,10 @@ public class RabbitBackend implements Backend {
                 .contentEncoding(ENCODING)
                 .build();
 
-        Map<String, String> excInfo = new HashMap<>();
-        excInfo.put("exc_type", e.getClass().getSimpleName());
-        excInfo.put("exc_message", e.getMessage());
-
         TaskResult res = new TaskResult();
-        res.result = excInfo;
+        res.result = jsonMapper.createObjectNode()
+                .put("exc_type", e.getClass().getSimpleName())
+                .put("exc_message", e.getMessage());
         res.taskId = taskId;
         res.status = TaskResult.Status.FAILURE;
 

@@ -165,7 +165,7 @@ class ClientWithBackendTest extends Specification {
 
     def "Client should return result from backend"() {
         def result = SettableFuture.create()
-        resultsProvider.getResult(_) >> result
+        resultsProvider.getResult(_, Object.class) >> result
 
         def returnedResult
 
@@ -196,7 +196,7 @@ class ClientWithBackendTest extends Specification {
 
         and:
         taskId != null
-        1 * resultsProvider.getResult({ it == taskId })
+        1 * resultsProvider.getResult({ it == taskId }, Object.class)
     }
 
     def "Client should declare queue before sending its message"() {

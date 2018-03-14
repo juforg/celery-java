@@ -57,7 +57,7 @@ public abstract class CeleryClientCore implements Closeable {
     //
     // This is tailored for the RabbitMQ connections - they fail to be created if the host can't be reached but they
     // can heal automatically. If other brokers/backends don't work this way, we might need to rework it.
-    private final Supplier<Optional<ResultsProvider<?>>> resultsProvider;
+    private final Supplier<Optional<ResultsProvider>> resultsProvider;
     private final Supplier<Broker> broker;
 
     /**
@@ -122,7 +122,7 @@ public abstract class CeleryClientCore implements Closeable {
     protected abstract Iterable<BackendFactory> findBackends();
 
     /** Gets {@link ResultsProvider} for the configured {@code backendUri} and {@code clientId}. */
-    private Optional<ResultsProvider<?>> resultsProviderSupplier() {
+    private Optional<ResultsProvider> resultsProviderSupplier() {
         if (backendUri == null) {
             return Optional.empty();
         }
@@ -135,7 +135,7 @@ public abstract class CeleryClientCore implements Closeable {
                 knownProtocols.addAll(factoryProtocols);
 
                 if (factoryProtocols.contains(backendUri.getScheme())) {
-                    ResultsProvider<?> rp = factory
+                    ResultsProvider rp = factory
                             .createBackend(backendUri, executor)
                             .resultsProviderFor(clientId);
                     return Optional.of(rp);
@@ -168,8 +168,8 @@ public abstract class CeleryClientCore implements Closeable {
      *
      * @throws IOException if the message couldn't be sent
      */
-    public final <T, R> ListenableFuture<R> submit(Class<T> taskClass, String method, Object[] args) throws IOException {
-        return submit(taskClass.getName() + "#" + method, args);
+    public final <T> ListenableFuture<?> submit(Class<T> taskClass, String method, Object[] args) throws IOException {
+        return submit(taskClass, method, args, Object.class);
     }
 
     /**
@@ -181,13 +181,42 @@ public abstract class CeleryClientCore implements Closeable {
      *
      * @throws IOException if the message couldn't be sent
      */
-    public final <R> ListenableFuture<R> submit(String name, Object[] args) throws IOException {
+    public final ListenableFuture<?> submit(String name, Object[] args) throws IOException {
+        return submit(name, args, Object.class);
+    }
+
+    /**
+     * Submit a Java task for processing. You'll probably not need to call this method.
+     *
+     * @param taskClass task implementing class
+     * @param method method in {@code taskClass} that does the work
+     * @param args positional arguments for the method (need to be JSON serializable)
+     * @param resultClass expected class of the result object
+     * @return asynchronous result
+     *
+     * @throws IOException if the message couldn't be sent
+     */
+    public final <T, R> ListenableFuture<R> submit(Class<T> taskClass, String method, Object[] args, Class<R> resultClass) throws IOException {
+        return submit(taskClass.getName() + "#" + method, args, resultClass);
+    }
+
+    /**
+     * Submit a task by name. A low level method for submitting arbitrary tasks.
+     *
+     * @param name task name as understood by the worker
+     * @param args positional arguments for the method (need to be JSON serializable)
+     * @param resultClass expected class of the result object
+     * @return asynchronous result
+     *
+     * @throws IOException if the message couldn't be sent
+     */
+    public final <R> ListenableFuture<R> submit(String name, Object[] args, Class<R> resultClass) throws IOException {
         // Get the provider early to increase the chance to find out there is a connection problem before actually
         // sending the message.
         //
         // This will help for example in the case when the connection can't be established at all. The connection may
         // still drop after sending the message but there isn't much we can do about it.
-        Optional<ResultsProvider<?>> rp = resultsProvider.get();
+        Optional<ResultsProvider> rp = resultsProvider.get();
         String taskId = UUID.randomUUID().toString();
 
         ArrayNode payload = jsonMapper.createArrayNode();
@@ -219,9 +248,7 @@ public abstract class CeleryClientCore implements Closeable {
         message.send(queue);
 
         if (rp.isPresent()) {
-            @SuppressWarnings("unchecked")
-            ResultsProvider<R> provider = (ResultsProvider<R>) rp.get();
-            return provider.getResult(taskId);
+            return rp.get().getResult(taskId, resultClass);
         } else {
             return Futures.immediateFuture(null);
         }

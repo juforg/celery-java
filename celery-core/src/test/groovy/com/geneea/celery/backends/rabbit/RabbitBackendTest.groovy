@@ -97,7 +97,7 @@ class RabbitResultConsumerTest extends Specification {
     }
 
     def "Consumer should report result of a task"() {
-        def result = consumer.getResult(taskId)
+        def result = consumer.getResult(taskId, Object.class)
 
         when:
         consumer.handleDelivery(null, new Envelope(1, false, "", ""), null, body.bytes)
@@ -116,7 +116,7 @@ class RabbitResultConsumerTest extends Specification {
     }
 
     def "Consumer should report a received error"() {
-        def result = consumer.getResult("1aa")
+        def result = consumer.getResult("1aa", Object.class)
         def ex
 
         when:
