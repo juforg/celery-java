@@ -61,8 +61,8 @@ class RabbitResultConsumer extends DefaultConsumer implements RabbitBackend.Resu
         if (payload.status == TaskResult.Status.SUCCESS) {
             setAccepted = future.set(payload.result);
         } else {
-            String excType = payload.result.get("exc_type").textValue();
-            String excMessage = payload.result.get("exc_message").textValue();
+            String excType = getStrValue(payload.result, "exc_type");
+            String excMessage = getStrValue(payload.result, "exc_message");
             setAccepted = future.setException(new WorkerException(excType, excMessage));
         }
 
@@ -77,5 +77,9 @@ class RabbitResultConsumer extends DefaultConsumer implements RabbitBackend.Resu
     @Override
     public RabbitBackend getBackend() {
         return backend;
+    }
+
+    private static String getStrValue(JsonNode node, String field) {
+        return (node != null && node.hasNonNull(field)) ? node.get(field).textValue() : null;
     }
 }
