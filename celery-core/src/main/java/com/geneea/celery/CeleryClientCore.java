@@ -165,10 +165,8 @@ public abstract class CeleryClientCore implements Closeable {
      * @param method method in {@code taskClass} that does the work
      * @param args positional arguments for the method (need to be JSON serializable)
      * @return asynchronous result
-     *
-     * @throws IOException if the message couldn't be sent
      */
-    public final <T> ListenableFuture<?> submit(Class<T> taskClass, String method, Object[] args) throws IOException {
+    public final <T> ListenableFuture<?> submit(Class<T> taskClass, String method, Object[] args) {
         return submit(taskClass, method, args, Object.class);
     }
 
@@ -178,10 +176,8 @@ public abstract class CeleryClientCore implements Closeable {
      * @param name task name as understood by the worker
      * @param args positional arguments for the method (need to be JSON serializable)
      * @return asynchronous result
-     *
-     * @throws IOException if the message couldn't be sent
      */
-    public final ListenableFuture<?> submit(String name, Object[] args) throws IOException {
+    public final ListenableFuture<?> submit(String name, Object[] args) {
         return submit(name, args, Object.class);
     }
 
@@ -193,10 +189,8 @@ public abstract class CeleryClientCore implements Closeable {
      * @param args positional arguments for the method (need to be JSON serializable)
      * @param resultClass expected class of the result object
      * @return asynchronous result
-     *
-     * @throws IOException if the message couldn't be sent
      */
-    public final <T, R> ListenableFuture<R> submit(Class<T> taskClass, String method, Object[] args, Class<R> resultClass) throws IOException {
+    public final <T, R> ListenableFuture<R> submit(Class<T> taskClass, String method, Object[] args, Class<R> resultClass) {
         return submit(taskClass.getName() + "#" + method, args, resultClass);
     }
 
@@ -207,10 +201,8 @@ public abstract class CeleryClientCore implements Closeable {
      * @param args positional arguments for the method (need to be JSON serializable)
      * @param resultClass expected class of the result object
      * @return asynchronous result
-     *
-     * @throws IOException if the message couldn't be sent
      */
-    public final <R> ListenableFuture<R> submit(String name, Object[] args, Class<R> resultClass) throws IOException {
+    public final <R> ListenableFuture<R> submit(String name, Object[] args, Class<R> resultClass) {
         // Get the provider early to increase the chance to find out there is a connection problem before actually
         // sending the message.
         //
@@ -219,33 +211,38 @@ public abstract class CeleryClientCore implements Closeable {
         Optional<ResultsProvider> rp = resultsProvider.get();
         String taskId = UUID.randomUUID().toString();
 
-        ArrayNode payload = jsonMapper.createArrayNode();
-        ArrayNode argsArr = payload.addArray();
-        for (Object arg : args) {
-            argsArr.addPOJO(arg);
+        try {
+            ArrayNode payload = jsonMapper.createArrayNode();
+            ArrayNode argsArr = payload.addArray();
+            for (Object arg : args) {
+                argsArr.addPOJO(arg);
+            }
+            payload.addObject();
+            payload.addObject()
+                    .putNull("callbacks")
+                    .putNull("chain")
+                    .putNull("chord")
+                    .putNull("errbacks");
+
+            Message message = broker.get().newMessage();
+            message.setBody(jsonMapper.writeValueAsBytes(payload));
+            message.setContentEncoding(ENCODING);
+            message.setContentType(CONTENT_TYPE);
+
+            Message.Headers headers = message.getHeaders();
+            headers.setId(taskId);
+            headers.setTaskName(name);
+            headers.setArgsRepr("(" + Joiner.on(", ").join(args) + ")");
+            headers.setOrigin(clientName);
+            if (rp.isPresent()) {
+                headers.setReplyTo(clientId);
+            }
+
+            message.send(queue);
+        } catch (IOException e) {
+            // propagate the exception as a failed future
+            return Futures.immediateFailedFuture(e);
         }
-        payload.addObject();
-        payload.addObject()
-                .putNull("callbacks")
-                .putNull("chain")
-                .putNull("chord")
-                .putNull("errbacks");
-
-        Message message = broker.get().newMessage();
-        message.setBody(jsonMapper.writeValueAsBytes(payload));
-        message.setContentEncoding(ENCODING);
-        message.setContentType(CONTENT_TYPE);
-
-        Message.Headers headers = message.getHeaders();
-        headers.setId(taskId);
-        headers.setTaskName(name);
-        headers.setArgsRepr("(" + Joiner.on(", ").join(args) + ")");
-        headers.setOrigin(clientName);
-        if (rp.isPresent()) {
-            headers.setReplyTo(clientId);
-        }
-
-        message.send(queue);
 
         if (rp.isPresent()) {
             return rp.get().getResult(taskId, resultClass);
