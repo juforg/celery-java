@@ -9,7 +9,7 @@ import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 
 import java.io.IOException;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 /**
@@ -31,9 +31,9 @@ public class RabbitBackend implements Backend {
 
     final Channel channel;
     final ObjectMapper jsonMapper;
-    final ExecutorService executor;
+    final Executor executor;
 
-    public RabbitBackend(Channel channel, ObjectMapper jsonMapper, ExecutorService executor) {
+    public RabbitBackend(Channel channel, ObjectMapper jsonMapper, Executor executor) {
         this.channel = channel;
         this.jsonMapper = jsonMapper != null ? jsonMapper : new ObjectMapper();
         this.executor = executor != null ? executor : Executors.newCachedThreadPool();
@@ -43,7 +43,7 @@ public class RabbitBackend implements Backend {
         this(channel, jsonMapper, null);
     }
 
-    public RabbitBackend(Channel channel, ExecutorService executor) {
+    public RabbitBackend(Channel channel, Executor executor) {
         this(channel, null, executor);
     }
 

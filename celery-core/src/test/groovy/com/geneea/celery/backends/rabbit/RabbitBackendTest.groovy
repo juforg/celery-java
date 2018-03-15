@@ -1,6 +1,7 @@
 package com.geneea.celery.backends.rabbit
 
 import com.geneea.celery.WorkerException
+import com.google.common.util.concurrent.MoreExecutors
 import com.rabbitmq.client.BasicProperties
 import com.rabbitmq.client.Channel
 import com.rabbitmq.client.Envelope
@@ -17,7 +18,7 @@ class RabbitBackendTest extends Specification {
 
     def setup() {
         channel = Mock(Channel.class)
-        backend = new RabbitBackend(channel)
+        backend = new RabbitBackend(channel, MoreExecutors.directExecutor())
     }
 
     def "Backend should use the RabbitResultConsumer"() {
@@ -28,6 +29,7 @@ class RabbitBackendTest extends Specification {
         resultsProvider = backend.resultsProviderFor(clientId)
 
         then:
+        1 * channel.basicQos(2, false)
         1 * channel.queueDeclare(clientId, false, false, true, ["x-expires": 24 * 3600 * 1000])
         1 * channel.basicConsume(clientId, { consumerArg = it })
         resultsProvider == consumerArg
@@ -92,7 +94,7 @@ class RabbitResultConsumerTest extends Specification {
 
     def setup() {
         channel = Mock(Channel.class)
-        backend = new RabbitBackend(channel)
+        backend = new RabbitBackend(channel, MoreExecutors.directExecutor())
         consumer = new RabbitResultConsumer(backend)
     }
 
