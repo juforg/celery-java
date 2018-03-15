@@ -152,4 +152,30 @@ class RabbitResultConsumerTest extends Specification {
                         '"task_id": "1aa"}',
         ]
     }
+
+    def "Consumer should report right POJO result of a task"() {
+        def result = consumer.getResult(taskId, TestResultObj.class)
+
+        when:
+        consumer.handleDelivery(null, new Envelope(1, false, "", ""), null, body.bytes)
+
+        then:
+        result.isDone()
+        result.get().strVal == strVal
+        result.get().intVals == intVals as int[]
+        result.get().floatVal == floatVal
+
+        where:
+        body                                                                                                                   | taskId | strVal | intVals | floatVal
+        '{"children":[], "status": "SUCCESS", "result": {}, "traceback": null, "task_id": "1"}'                                | "1"    | null   | null    | null
+        '{"children":[], "status": "SUCCESS", "result": {"strVal": "test"}, "traceback": null, "task_id": "2"}'                | "2"    | "test" | null    | null
+        '{"children":[], "status": "SUCCESS", "result": {"intVals": [1, 2, 3]}, "traceback": null, "task_id": "3"}'            | "3"    | null   | [1,2,3] | null
+        '{"children":[], "status": "SUCCESS", "result": {"intVals": [], "floatVal": 0.25}, "traceback": null, "task_id": "4"}' | "4"    | null   | []      | 0.25
+    }
+}
+
+class TestResultObj {
+    String strVal
+    int[] intVals
+    Float floatVal
 }
