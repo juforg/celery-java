@@ -173,13 +173,15 @@ public abstract class CeleryClientCore implements Closeable {
     }
 
     /**
-     * Submit a task by name. A low level method for submitting arbitrary tasks.
+     * Submit a task by name. A low level method for submitting arbitrary tasks. The message constructed by this
+     * method and sent to the underlying broker conforms Celery Message Protocol Version 2.
      *
      * @param name task name as understood by the worker
      * @param args positional arguments for the method (need to be JSON serializable)
      * @return asynchronous result
      *
      * @throws IOException if the message couldn't be sent
+     * @see http://docs.celeryproject.org/en/latest/internals/protocol.html for Celery Message Protocol Version 2
      */
     public final <R> ListenableFuture<R> submit(String name, Object[] args) throws IOException {
         // Get the provider early to increase the chance to find out there is a connection problem before actually
@@ -191,11 +193,14 @@ public abstract class CeleryClientCore implements Closeable {
         String taskId = UUID.randomUUID().toString();
 
         ArrayNode payload = jsonMapper.createArrayNode();
+        // args
         ArrayNode argsArr = payload.addArray();
         for (Object arg : args) {
             argsArr.addPOJO(arg);
         }
+        // kwargs
         payload.addObject();
+        // embed
         payload.addObject()
                 .putNull("callbacks")
                 .putNull("chain")
@@ -209,8 +214,10 @@ public abstract class CeleryClientCore implements Closeable {
 
         Message.Headers headers = message.getHeaders();
         headers.setId(taskId);
+        // presence of "task" header implies Version 2 Celery protocol
         headers.setTaskName(name);
-        headers.setArgsRepr("(" + Joiner.on(", ").join(args) + ")");
+// XXX: serializing all args to a string may result in rather large headers
+//        headers.setArgsRepr("(" + Joiner.on(", ").join(args) + ")");
         headers.setOrigin(clientName);
         if (rp.isPresent()) {
             headers.setReplyTo(clientId);

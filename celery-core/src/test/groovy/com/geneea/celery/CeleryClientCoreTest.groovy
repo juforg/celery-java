@@ -47,7 +47,7 @@ class ClientTest extends Specification {
         client.submit(TestingTask.class, "doWork", [0.5, new Payload(prop1: "p1val")] as Object[])
 
         then:
-        1 * message.headers.setArgsRepr(_)
+//        1 * message.headers.setArgsRepr(_)
         1 * message.headers.setOrigin({it.endsWith("@" + InetAddress.getLocalHost().getHostName())})
     }
 
