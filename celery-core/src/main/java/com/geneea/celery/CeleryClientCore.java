@@ -9,7 +9,6 @@ import com.geneea.celery.spi.Message;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.google.common.base.Joiner;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.Futures;
@@ -24,6 +23,7 @@ import java.io.UncheckedIOException;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
@@ -32,6 +32,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * The core implementation of a Celery client. It should work with any {@link Broker} or {@link Backend}.
@@ -216,8 +217,9 @@ public abstract class CeleryClientCore implements Closeable {
         headers.setId(taskId);
         // presence of "task" header implies Version 2 Celery protocol
         headers.setTaskName(name);
-// XXX: serializing all args to a string may result in rather large headers
-//        headers.setArgsRepr("(" + Joiner.on(", ").join(args) + ")");
+        headers.setArgsRepr(
+            Arrays.asList(args).stream().map(CeleryClientCore::toString).collect(Collectors.joining(", ", "(", ")"))
+        );
         headers.setOrigin(clientName);
         if (rp.isPresent()) {
             headers.setReplyTo(clientId);
@@ -241,6 +243,33 @@ public abstract class CeleryClientCore implements Closeable {
                 .map(ResultsProvider::getBackend);
         if (b.isPresent()) {
             b.get().close();
+        }
+    }
+
+    /**
+     * Converts an arbitrary object to a String. It checks for {@code null} and tries to produce reasonably
+     * short string representations:
+     *
+     * <li>{@link CharSequence} instances are trimmed if longer then 100; the trimmed string will show the beginning
+     * and the ending characters
+     * <li>simple objects (eg. {@link Number}, {@link Boolean}, etc) are converted using their {@code toString()}
+     * <li>complex objects are converted to their class name and identity hashcode
+     *
+     * @param o object to convert
+     * @return a string representation of the object
+     */
+    private static String toString(Object o) {
+        if (o == null) {
+            return "null";
+        } else if (o instanceof CharSequence) {
+            CharSequence s = (CharSequence) o;
+            return s.length() < 100
+                ? "\"" + s.toString() + "\""
+                : "\"" + s.subSequence(0, 30) + "..." + s.subSequence(s.length() - 30, s.length()) + "\"";
+        } else if (o instanceof Number || o instanceof Boolean) {
+            return o.toString();
+        } else {
+            return o.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(o));
         }
     }
 }

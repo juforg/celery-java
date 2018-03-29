@@ -43,11 +43,17 @@ class ClientTest extends Specification {
     }
 
     def "Client should set task properties"() {
+        def payload = new Payload(prop1: "p1val")
+        def tooLongString = ""
+        (1..100).each { tooLongString += Integer.toHexString(it) }
+
         when:
-        client.submit(TestingTask.class, "doWork", [0.5, new Payload(prop1: "p1val")] as Object[])
+        client.submit(TestingTask.class, "doWork", [0.5, "xyz", true, 3, payload, tooLongString] as Object[])
 
         then:
-//        1 * message.headers.setArgsRepr(_)
+        1 * message.headers.setArgsRepr("(0.5, \"xyz\", true, 3" \
+            + ", com.geneea.celery.Payload@"+ Integer.toHexString(System.identityHashCode(payload)) \
+            + ", \"" + tooLongString[0..<30] + "..." + tooLongString[-30..-1] + "\")")
         1 * message.headers.setOrigin({it.endsWith("@" + InetAddress.getLocalHost().getHostName())})
     }
 
