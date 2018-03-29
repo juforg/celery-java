@@ -23,7 +23,6 @@ import java.io.UncheckedIOException;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
@@ -33,6 +32,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * The core implementation of a Celery client. It should work with any {@link Broker} or {@link Backend}.
@@ -218,7 +218,7 @@ public abstract class CeleryClientCore implements Closeable {
         // presence of "task" header implies Version 2 Celery protocol
         headers.setTaskName(name);
         headers.setArgsRepr(
-            Arrays.asList(args).stream().map(CeleryClientCore::toString).collect(Collectors.joining(", ", "(", ")"))
+            Stream.of(args).map(CeleryClientCore::toDebugString).collect(Collectors.joining(", ", "(", ")"))
         );
         headers.setOrigin(clientName);
         if (rp.isPresent()) {
@@ -258,7 +258,7 @@ public abstract class CeleryClientCore implements Closeable {
      * @param o object to convert
      * @return a string representation of the object
      */
-    private static String toString(Object o) {
+    private static String toDebugString(Object o) {
         if (o == null) {
             return "null";
         } else if (o instanceof CharSequence) {
