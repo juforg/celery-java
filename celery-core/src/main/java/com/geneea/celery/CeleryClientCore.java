@@ -9,7 +9,6 @@ import com.geneea.celery.spi.Message;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.google.common.base.Joiner;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.Futures;
@@ -32,6 +31,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * The core implementation of a Celery client. It should work with any {@link Broker} or {@link Backend}.
@@ -173,13 +174,15 @@ public abstract class CeleryClientCore implements Closeable {
     }
 
     /**
-     * Submit a task by name. A low level method for submitting arbitrary tasks.
+     * Submit a task by name. A low level method for submitting arbitrary tasks. The message constructed by this
+     * method and sent to the underlying broker conforms Celery Message Protocol Version 2.
      *
      * @param name task name as understood by the worker
      * @param args positional arguments for the method (need to be JSON serializable)
      * @return asynchronous result
      *
      * @throws IOException if the message couldn't be sent
+     * @see http://docs.celeryproject.org/en/latest/internals/protocol.html for Celery Message Protocol Version 2
      */
     public final <R> ListenableFuture<R> submit(String name, Object[] args) throws IOException {
         // Get the provider early to increase the chance to find out there is a connection problem before actually
@@ -191,11 +194,14 @@ public abstract class CeleryClientCore implements Closeable {
         String taskId = UUID.randomUUID().toString();
 
         ArrayNode payload = jsonMapper.createArrayNode();
+        // args
         ArrayNode argsArr = payload.addArray();
         for (Object arg : args) {
             argsArr.addPOJO(arg);
         }
+        // kwargs
         payload.addObject();
+        // embed
         payload.addObject()
                 .putNull("callbacks")
                 .putNull("chain")
@@ -209,8 +215,11 @@ public abstract class CeleryClientCore implements Closeable {
 
         Message.Headers headers = message.getHeaders();
         headers.setId(taskId);
+        // presence of "task" header implies Version 2 Celery protocol
         headers.setTaskName(name);
-        headers.setArgsRepr("(" + Joiner.on(", ").join(args) + ")");
+        headers.setArgsRepr(
+            Stream.of(args).map(CeleryClientCore::toDebugString).collect(Collectors.joining(", ", "(", ")"))
+        );
         headers.setOrigin(clientName);
         if (rp.isPresent()) {
             headers.setReplyTo(clientId);
@@ -234,6 +243,33 @@ public abstract class CeleryClientCore implements Closeable {
                 .map(ResultsProvider::getBackend);
         if (b.isPresent()) {
             b.get().close();
+        }
+    }
+
+    /**
+     * Converts an arbitrary object to a String. It checks for {@code null} and tries to produce reasonably
+     * short string representations:
+     *
+     * <li>{@link CharSequence} instances are trimmed if longer then 100; the trimmed string will show the beginning
+     * and the ending characters
+     * <li>simple objects (eg. {@link Number}, {@link Boolean}, etc) are converted using their {@code toString()}
+     * <li>complex objects are converted to their class name and identity hashcode
+     *
+     * @param o object to convert
+     * @return a string representation of the object
+     */
+    private static String toDebugString(Object o) {
+        if (o == null) {
+            return "null";
+        } else if (o instanceof CharSequence) {
+            CharSequence s = (CharSequence) o;
+            return s.length() < 100
+                ? "\"" + s.toString() + "\""
+                : "\"" + s.subSequence(0, 30) + "..." + s.subSequence(s.length() - 30, s.length()) + "\"";
+        } else if (o instanceof Number || o instanceof Boolean) {
+            return o.toString();
+        } else {
+            return o.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(o));
         }
     }
 }

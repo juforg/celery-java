@@ -61,14 +61,25 @@ class RabbitMessage implements Message {
         private final Map<String, Object> map = new HashMap<>();
 
         RabbitMessageHeaders() {
-            map.put("timelimit", Arrays.asList(null, null));
-            map.put("retries", 0);
+            // http://docs.celeryproject.org/en/latest/internals/protocol.html
+            // required:
+            // task
+            // id
+            // root_id
             map.put("parent_id", null);
-            map.put("kwargsrepr", "{}");
-            map.put("expires", null);
-            map.put("eta", null);
             map.put("lang", "py"); // sic
             map.put("group", null);
+
+            // optional:
+            // meth
+            // shadow
+            // origin
+            map.put("timelimit", Arrays.asList(null, null));
+            map.put("retries", 0);
+            map.put("kwargsrepr", "{}");
+            map.put("argsrepr", null);
+            map.put("expires", null);
+            map.put("eta", null);
         }
 
         @Override
