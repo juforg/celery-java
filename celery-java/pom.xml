@@ -8,7 +8,7 @@
     <parent>
         <groupId>com.geneea.celery</groupId>
         <artifactId>celery-java-parent</artifactId>
-        <version>1.10.2-SNAPSHOT</version>
+        <version>1.10.2</version>
     </parent>
 
     <name>Celery-Java</name>
@@ -22,7 +22,7 @@
         <dependency>
             <groupId>com.geneea.celery</groupId>
             <artifactId>celery-core</artifactId>
-            <version>1.10.2-SNAPSHOT</version>
+            <version>1.10.2</version>
         </dependency>
 
         <dependency>
