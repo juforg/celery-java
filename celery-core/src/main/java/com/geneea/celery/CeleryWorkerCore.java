@@ -49,6 +49,7 @@ public abstract class CeleryWorkerCore extends DefaultConsumer implements Closea
      * @param connection the RabbitMQ connection to be used
      * @param queue routing tag (specifies the Rabbit queue where to listen)
      * @param jsonMapper override for the used JSON mapper
+     * @throws java.io.IOException if the connection I/O problem occurs
      */
     protected CeleryWorkerCore(
             @Nonnull final Connection connection,
@@ -66,6 +67,8 @@ public abstract class CeleryWorkerCore extends DefaultConsumer implements Closea
      * @param uri the connection URI
      * @param executor override for the used executor service
      * @return new RabbitMQ connection
+     * @throws java.io.IOException if the connection I/O problem occurs
+     * @throws java.util.concurrent.TimeoutException if connecting times out
      */
     public static Connection connect(
             @Nonnull final String uri,
@@ -82,6 +85,7 @@ public abstract class CeleryWorkerCore extends DefaultConsumer implements Closea
 
     /**
      * Starts this worker listening on a RabbitMQ queue.
+     * @throws java.io.IOException if an I/O problem occurs
      */
     public final void start() throws IOException {
         // max number of unacknowledged messages "in-flight" from the queue to the consumer

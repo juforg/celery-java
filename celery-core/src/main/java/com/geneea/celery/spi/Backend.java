@@ -18,6 +18,7 @@ public interface Backend extends Closeable {
      * The client uses this method to subscribe to results of the tasks it sends.
      *
      * @param clientId your unique client ID
+     * @param <R> task result type
      * @return results provider returning task results
      * @throws IOException signalizes connection problem
      */
@@ -29,6 +30,7 @@ public interface Backend extends Closeable {
      * @param taskId unique task ID as received
      * @param queue which queue to report the result to (usually the client ID)
      * @param correlationId correlation ID as received
+     * @param <R> task result type
      * @param result the computation result (needs to be JSON serializable)
      * @throws IOException in case of connection problem
      */
