@@ -58,8 +58,9 @@ public abstract class CeleryClientCore implements Closeable {
     //
     // This is tailored for the RabbitMQ connections - they fail to be created if the host can't be reached but they
     // can heal automatically. If other brokers/backends don't work this way, we might need to rework it.
-    private final Supplier<Optional<ResultsProvider<?>>> resultsProvider;
-    private final Supplier<Broker> broker;
+    private final Supplier<Optional<ResultsProvider<?>>> resultsProvider =
+            Suppliers.memoize(this::resultsProviderSupplier);
+    private final Supplier<Broker> broker = Suppliers.memoize(this::brokerSupplier);
 
     /**
      * @param brokerUri connection to broker that will dispatch messages
@@ -81,9 +82,6 @@ public abstract class CeleryClientCore implements Closeable {
 
         this.executor = executor != null ? executor : Executors.newCachedThreadPool();
         this.jsonMapper = jsonMapper != null ? jsonMapper : new ObjectMapper();
-
-        broker = Suppliers.memoize(this::brokerSupplier);
-        resultsProvider = Suppliers.memoize(this::resultsProviderSupplier);
     }
 
     /**
