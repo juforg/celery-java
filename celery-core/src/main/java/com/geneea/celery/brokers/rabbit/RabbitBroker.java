@@ -16,8 +16,6 @@ import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import static javax.swing.UIManager.get;
-
 /**
  * RabbitMQ broker delivers messages to the workers.
  */
