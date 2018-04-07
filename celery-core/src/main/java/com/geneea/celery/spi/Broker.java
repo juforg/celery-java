@@ -9,6 +9,8 @@ import java.io.IOException;
  * <p>
  *     Broker delivers messages to the workers.
  * </p>
+ *
+ * Brokers must be thread safe. Multiple threads may submit messages at the same time.
  */
 public interface Broker extends Closeable {
 

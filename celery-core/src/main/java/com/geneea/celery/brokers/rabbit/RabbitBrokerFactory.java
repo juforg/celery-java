@@ -36,7 +36,6 @@ public class RabbitBrokerFactory implements BrokerFactory {
             throw new IOException(e);
         }
 
-        Connection connection = factory.newConnection(executor);
-        return new RabbitBroker(connection.createChannel());
+        return new RabbitBroker(factory.newConnection(executor));
     }
 }
