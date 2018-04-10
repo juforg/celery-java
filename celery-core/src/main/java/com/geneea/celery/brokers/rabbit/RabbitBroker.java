@@ -3,9 +3,8 @@ package com.geneea.celery.brokers.rabbit;
 import com.geneea.celery.spi.Broker;
 import com.geneea.celery.spi.Message;
 
+import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.google.common.cache.RemovalNotification;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import com.rabbitmq.client.Channel;
@@ -13,7 +12,6 @@ import com.rabbitmq.client.Connection;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -24,21 +22,13 @@ import java.util.concurrent.TimeUnit;
 public class RabbitBroker implements Broker {
 
     private final Connection connection;
-    private final LoadingCache<Long, Channel> channels = CacheBuilder.newBuilder()
+    private final Cache<Long, Channel> channels = CacheBuilder.newBuilder()
             .expireAfterAccess(10, TimeUnit.MINUTES)
             .removalListener(this::closeRemovedChannel)
-            .build(CacheLoader.from(this::createChannel));
+            .build();
 
     public RabbitBroker(Connection connection) {
         this.connection = connection;
-    }
-
-    private Channel createChannel() {
-        try {
-            return connection.createChannel();
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
     }
 
     private void closeRemovedChannel(RemovalNotification<Long, Channel> notification) {
@@ -68,13 +58,11 @@ public class RabbitBroker implements Broker {
      */
     Channel getChannel() throws IOException {
         try {
-            return channels.get(Thread.currentThread().getId());
+            return channels.get(Thread.currentThread().getId(), connection::createChannel);
         } catch (ExecutionException | UncheckedExecutionException e) {
             final Throwable cause = e.getCause();
             if (cause instanceof IOException) {
                 throw (IOException) cause;
-            } else if (cause instanceof UncheckedIOException) {
-                throw ((UncheckedIOException) cause).getCause();
             } else if (cause instanceof RuntimeException) {
                 throw (RuntimeException) cause;
             } else {
