@@ -3,6 +3,7 @@ package com.geneea.celery.brokers.rabbit
 import com.geneea.celery.spi.Message
 import com.rabbitmq.client.BasicProperties
 import com.rabbitmq.client.Channel
+import com.rabbitmq.client.Connection
 import spock.genesis.Gen
 import spock.lang.Specification
 
@@ -13,8 +14,10 @@ class RabbitBrokerTest extends Specification {
     def Message message
 
     def setup() {
+        def connection = Mock(Connection.class)
         channel = Mock(Channel.class)
-        broker = new RabbitBroker(channel)
+        connection.createChannel() >> channel
+        broker = new RabbitBroker(connection)
         message = broker.newMessage()
     }
 

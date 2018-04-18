@@ -53,7 +53,7 @@ class RabbitMessage implements Message {
     public void send(String queue) throws IOException {
         queue = Strings.isNullOrEmpty(queue) ? "celery" : queue;
         AMQP.BasicProperties messageProperties = props.headers(headers.map).build();
-        broker.channel.basicPublish("", queue, messageProperties, body);
+        broker.getChannel().basicPublish("", queue, messageProperties, body);
     }
 
     class RabbitMessageHeaders implements Headers {
