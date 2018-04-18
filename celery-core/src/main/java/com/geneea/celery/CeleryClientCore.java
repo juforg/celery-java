@@ -37,7 +37,8 @@ import java.util.stream.Stream;
 /**
  * The core implementation of a Celery client. It should work with any {@link Broker} or {@link Backend}.
  *
- * This client should be usable from multiple threads.
+ * Thread safety: this client (and any of its subclasses) can be used to submit tasks concurrently from multiple
+ * threads.
  */
 @Slf4j
 public abstract class CeleryClientCore implements Closeable {
