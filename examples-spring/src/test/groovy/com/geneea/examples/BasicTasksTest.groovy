@@ -1,8 +1,7 @@
 package com.geneea.examples
 
-import com.geneea.celery.Celery
 import com.geneea.celery.WorkerException
-import com.geneea.celery.examples.*
+import com.geneea.celery.examples.ExamplesApplication
 import com.rabbitmq.client.ConnectionFactory
 import com.rabbitmq.client.impl.ForgivingExceptionHandler
 import org.junit.Rule
@@ -16,11 +15,11 @@ import java.util.concurrent.ForkJoinPool
 import java.util.concurrent.TimeUnit
 
 class BasicTasksTest extends Specification {
-    static final int RABBIT_PORT = 5672
-    static final int RABBIT_MANAGEMENT_PORT = 15672
 
-    String rabbitUrl(GenericContainer rabbit, String protocol) {
-        return "$protocol://guest:guest@${rabbit.getContainerIpAddress()}:${rabbit.getMappedPort(RABBIT_PORT)}/%2F"
+    static final int RABBIT_PORT = 5672
+
+    String rabbitHost(GenericContainer rabbit) {
+        return "${rabbit.getContainerIpAddress()}:${rabbit.getMappedPort(RABBIT_PORT)}"
     }
 
     class RabbitWaitStrategy extends GenericContainer.AbstractWaitStrategy {
@@ -28,7 +27,7 @@ class BasicTasksTest extends Specification {
         @Override
         protected void waitUntilReady() {
             def f = new ConnectionFactory()
-            f.uri = rabbitUrl(container, "amqp")
+            f.uri = "amqp://guest:guest@${rabbitHost(container)}/%2F"
             f.exceptionHandler = new ForgivingExceptionHandler() {
                 void log(String message, Throwable e) {} // don't log anything
             }
@@ -43,23 +42,19 @@ class BasicTasksTest extends Specification {
             .withExposedPorts(RABBIT_PORT)
             .waitingFor(new RabbitWaitStrategy())
 
-    Celery client
-    Thread worker
+    ExamplesApplication app
 
     def setup() {
-        client = Celery.builder().brokerUri(rabbitUrl(rabbit, "amqp")).backendUri(rabbitUrl(rabbit, "rpc")).build()
-
-        worker = Thread.start { it ->
-            WorkerWithTestTasks.main(["--broker", rabbitUrl(rabbit, "amqp")] as String[])
-        }
+        System.setProperty(ExamplesApplication.RABBIT_HOST_SYS_PROP, rabbitHost(rabbit))
+        app = ExamplesApplication.startSpringApp()
     }
 
     def "We should get the result computed by a basic task"() {
         def result
         when:
-        result = TestTaskProxy.with(client).sum(a, b)
+        result = app.testTaskProxy.sum(a, b)
         then:
-        result.get() == new TestTask().sum(a, b)
+        result.get() == app.testTasky.sum(a, b)
 
         where:
         a << Gen.integer(0, (Integer.MAX_VALUE / 2) as int).take(1)
@@ -69,7 +64,7 @@ class BasicTasksTest extends Specification {
     def "The future of a void task should be completed eventually"() {
         def result
         when:
-        result = TestVoidTaskProxy.with(client).run(-7, 12)
+        result = app.voidTaskProxy.run(-7, 12)
         then:
         result.get() == null
         result.isDone()
@@ -79,7 +74,7 @@ class BasicTasksTest extends Specification {
         WorkerException exception
         when:
         try {
-            task(client).get()
+            task(app.badTaskProxy).get()
         } catch (ExecutionException t) {
             exception = t.cause
         }
@@ -87,8 +82,8 @@ class BasicTasksTest extends Specification {
         exception.message == expectedMessage
 
         where:
-        task                                                         | expectedMessage
-        {it -> BadTaskProxy.with(it).throwCheckedException() }       | "Exception(null)"
-        {it -> BadTaskProxy.with(it).throwUncheckedException() }     | "RuntimeException(null)"
+        task                                      | expectedMessage
+        {it -> it.throwCheckedException() }       | "Exception(null)"
+        {it -> it.throwUncheckedException() }     | "RuntimeException(null)"
     }
 }

@@ -10,7 +10,9 @@
     <modules>
         <module>celery-core</module>
         <module>celery-java</module>
+        <module>celery-spring</module>
         <module>examples</module>
+        <module>examples-spring</module>
     </modules>
 
     <properties>
