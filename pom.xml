@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.geneea.celery</groupId>
+    <groupId>vip.appcity</groupId>
     <artifactId>celery-java-parent</artifactId>
     <packaging>pom</packaging>
     <version>1.10.4</version>
@@ -28,7 +28,7 @@
         Java library for interfacing with http://celeryproject.org including code
         for both task submissions and task execution.
     </description>
-    <url>https://bitbucket.org/geneea/celery-java</url>
+    <url>https://github.com/juforg/celery-java</url>
 
     <licenses>
         <license>
@@ -39,9 +39,9 @@
     </licenses>
 
     <scm>
-        <url>https://bitbucket.org/geneea/celery-java</url>
-        <connection>scm:git:git@bitbucket.org:geneea/celery-java.git</connection>
-        <developerConnection>scm:git:git@bitbucket.org:geneea/celery-java.git</developerConnection>
+        <url>https://github.com/juforg//celery-java</url>
+        <connection>scm:git://github.com/juforg/celery-java.git</connection>
+        <developerConnection>scm:git://github.com/juforg/celery-java.git</developerConnection>
         <tag>celery-java-parent-1.10.4</tag>
     </scm>
 
@@ -226,23 +226,19 @@
     <distributionManagement>
         <snapshotRepository>
             <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
         <repository>
             <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
     </distributionManagement>
 
     <developers>
         <developer>
-            <id>sedlakf</id>
-            <email>filip@sedlakovi.org</email>
-            <url>http://www.sedlakovi.org/</url>
-            <timezone>Europe/Prague</timezone>
-            <roles>
-                <role>developer</role>
-            </roles>
+            <name>juforg</name>
+            <email>juforg@gmail.com</email>
+            <organization>appcity</organization>
         </developer>
     </developers>
 </project>

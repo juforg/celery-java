@@ -6,7 +6,7 @@
     <packaging>jar</packaging>
 
     <parent>
-        <groupId>com.geneea.celery</groupId>
+        <groupId>vip.appcity</groupId>
         <artifactId>celery-java-parent</artifactId>
         <version>1.10.4</version>
     </parent>
@@ -43,7 +43,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.geneea.celery</groupId>
+            <groupId>vip.appcity</groupId>
             <artifactId>celery-java</artifactId>
             <version>1.10.4</version>
         </dependency>

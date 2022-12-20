@@ -173,7 +173,7 @@ public abstract class CeleryClientCore implements Closeable {
      * @throws IOException if the message couldn't be sent
      */
     public final <T, R> ListenableFuture<R> submit(Class<T> taskClass, String method, Object[] args) throws IOException {
-        return submit(taskClass.getName() + "#" + method, args);
+        return submit(taskClass.getName() + "#" + method,null, args);
     }
 
     /**
@@ -188,14 +188,16 @@ public abstract class CeleryClientCore implements Closeable {
      * @throws IOException if the message couldn't be sent
      * @see <a href="http://docs.celeryproject.org/en/latest/internals/protocol.html">Celery Message Protocol Version 2</a>
      */
-    public final <R> ListenableFuture<R> submit(String name, Object[] args) throws IOException {
+    public final <R> ListenableFuture<R> submit(String name,String taskId, Object[] args) throws IOException {
         // Get the provider early to increase the chance to find out there is a connection problem before actually
         // sending the message.
         //
         // This will help for example in the case when the connection can't be established at all. The connection may
         // still drop after sending the message but there isn't much we can do about it.
         Optional<ResultsProvider<?>> rp = resultsProvider.get();
-        String taskId = UUID.randomUUID().toString();
+        if(null == taskId || "".equals(taskId)){
+            taskId = UUID.randomUUID().toString();
+        }
 
         ArrayNode payload = jsonMapper.createArrayNode();
         // args
