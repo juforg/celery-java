@@ -1,5 +1,4 @@
-# celery-java
-fork from https://bitbucket.org/geneea/celery-java
+# celery-java fork from https://bitbucket.org/geneea/celery-java
 Java implementation of [Celery][celery] client and worker. Quoting from the project website:
 
 > Celery is an asynchronous task queue/job queue based on distributed message passing. It is focused on real-time operation, but supports scheduling as well.

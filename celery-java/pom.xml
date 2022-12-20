@@ -16,7 +16,7 @@
         Java library for interfacing with http://celeryproject.org including code
         for both task submissions and task execution.
     </description>
-    <url>https://bitbucket.org/geneea/celery-java</url>
+    <url>https://github.com/juforg/celery-java</url>
 
     <dependencies>
         <dependency>
