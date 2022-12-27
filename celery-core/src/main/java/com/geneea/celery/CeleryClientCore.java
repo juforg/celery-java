@@ -181,6 +181,7 @@ public abstract class CeleryClientCore implements Closeable {
      * method and sent to the underlying broker conforms Celery Message Protocol Version 2.
      *
      * @param name task name as understood by the worker
+     * @param taskId task id from caller, can be null
      * @param args positional arguments for the method (need to be JSON serializable)
      * @param <R> task result type
      * @return asynchronous result
@@ -188,7 +189,7 @@ public abstract class CeleryClientCore implements Closeable {
      * @throws IOException if the message couldn't be sent
      * @see <a href="http://docs.celeryproject.org/en/latest/internals/protocol.html">Celery Message Protocol Version 2</a>
      */
-    public final <R> ListenableFuture<R> submit(String name,String taskId, Object[] args) throws IOException {
+    public final <R> ListenableFuture<R> submit(String name, String taskId, Object[] args) throws IOException {
         // Get the provider early to increase the chance to find out there is a connection problem before actually
         // sending the message.
         //
