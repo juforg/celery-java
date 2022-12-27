@@ -2,18 +2,19 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+
     <artifactId>celery-core</artifactId>
     <packaging>jar</packaging>
 
     <parent>
         <groupId>vip.appcity</groupId>
         <artifactId>celery-java-parent</artifactId>
-        <version>1.10.4</version>
+        <version>1.10.5-SNAPSHOT</version>
     </parent>
 
     <name>Celery-Core</name>
     <description>
-        Java library for interfacing with http://celeryproject.org including code
+        Java library for interfacing with https://docs.celeryq.dev/en/latest/ including code
         for both task submissions and task execution.
     </description>
     <url>https://github.com/juforg/celery-java</url>

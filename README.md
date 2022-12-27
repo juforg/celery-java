@@ -29,7 +29,7 @@ Patches providing any of these are welcome.
 ## Maven dependency
 
 Releases are available from Maven Central. Latest version: [![Maven
-Central](https://maven-badges.herokuapp.com/maven-central/com.geneea.celery/celery-java/badge.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.geneea.celery%22%20AND%20a%3A%22celery-java%22)
+Central](https://maven-badges.herokuapp.com/maven-central/vip.appcity.celery/celery-java/badge.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22vip.appcity.celery%22%20AND%20a%3A%22celery-java%22)
 
 ```xml
 <dependency>
@@ -61,7 +61,7 @@ Check out generated Javadoc at [http://crabhi.github.io/celery-java/apidocs/](ht
 1. Annotate your class that does something useful as a `@CeleryTask`.
 
 ```java
-    import com.geneea.celery.CeleryTask;
+    import CeleryTask;
 
     @CeleryTask
     public class TestTask {
@@ -75,7 +75,7 @@ Check out generated Javadoc at [http://crabhi.github.io/celery-java/apidocs/](ht
 2. Run `CeleryWorker` with your tasks on classpath. You can directly use its CLI class or embed it into your `main` function.
 
 ```java
-    import com.geneea.celery.CeleryWorkerCLI;
+    import CeleryWorkerCLI;
 
     public class MyWorker {
         public static void main(String[] args) throws Exception {
@@ -91,11 +91,11 @@ Check out generated Javadoc at [http://crabhi.github.io/celery-java/apidocs/](ht
 
     In [2]: app = celery.Celery(broker="amqp://localhost/", backend="rpc://localhost")
 
-    In [3]: app.signature("com.geneea.celery.examples.TestTask#sum", [1, 2]).delay().get()
+    In [3]: app.signature("TestTask#sum", [1, 2]).delay().get()
     Out[3]: 3
 
     In [4]: %%timeit
-       ...: app.signature("com.geneea.celery.examples.TestTask#sum", [1, 2]).delay().get()
+       ...: app.signature("TestTask#sum", [1, 2]).delay().get()
        ...:
     2.1 ms ± 170 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 ```

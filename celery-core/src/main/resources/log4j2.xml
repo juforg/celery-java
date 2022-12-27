@@ -6,7 +6,7 @@
         </Console>
     </Appenders>
     <Loggers>
-        <Logger name="com.geneea" level="info" additivity="false">
+        <Logger name="vip.appcity" level="info" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
         <Root level="warn">

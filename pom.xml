@@ -5,7 +5,7 @@
     <groupId>vip.appcity</groupId>
     <artifactId>celery-java-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.10.4</version>
+    <version>1.10.5-SNAPSHOT</version>
 
     <modules>
         <module>celery-core</module>
@@ -25,7 +25,7 @@
 
     <name>Celery-Java parent</name>
     <description>
-        Java library for interfacing with http://celeryproject.org including code
+        Java library for interfacing with https://docs.celeryq.dev/en/latest/ including code
         for both task submissions and task execution.
     </description>
     <url>https://github.com/juforg/celery-java</url>
@@ -42,7 +42,7 @@
         <url>https://github.com/juforg//celery-java</url>
         <connection>scm:git://github.com/juforg/celery-java.git</connection>
         <developerConnection>scm:git://github.com/juforg/celery-java.git</developerConnection>
-        <tag>celery-java-parent-1.10.4</tag>
+        <tag>celery-java-parent-1.10.5-SNAPSHOT</tag>
     </scm>
 
     <profiles>
