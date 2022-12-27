@@ -1,6 +1,6 @@
 package ${packageName};
 
-import Celery;
+import vip.appcity.celery.Celery;
 import com.google.common.util.concurrent.ListenableFuture;
 
 public final class ${taskName}Proxy {
