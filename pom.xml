@@ -5,7 +5,7 @@
     <groupId>vip.appcity</groupId>
     <artifactId>celery-java-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.10.5-SNAPSHOT</version>
+    <version>1.10.5</version>
 
     <modules>
         <module>celery-core</module>
@@ -42,7 +42,7 @@
         <url>https://github.com/juforg//celery-java</url>
         <connection>scm:git://github.com/juforg/celery-java.git</connection>
         <developerConnection>scm:git://github.com/juforg/celery-java.git</developerConnection>
-        <tag>celery-java-parent-1.10.5-SNAPSHOT</tag>
+        <tag>celery-java-parent-1.10.5</tag>
     </scm>
 
     <profiles>

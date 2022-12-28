@@ -8,7 +8,7 @@
     <parent>
         <groupId>vip.appcity</groupId>
         <artifactId>celery-java-parent</artifactId>
-        <version>1.10.5-SNAPSHOT</version>
+        <version>1.10.5</version>
     </parent>
 
     <build>
@@ -45,7 +45,7 @@
         <dependency>
             <groupId>vip.appcity</groupId>
             <artifactId>celery-java</artifactId>
-            <version>1.10.5-SNAPSHOT</version>
+            <version>1.10.5</version>
         </dependency>
 
         <!-- Test dependencies -->
