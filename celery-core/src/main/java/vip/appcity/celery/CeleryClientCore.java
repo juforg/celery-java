@@ -1,12 +1,5 @@
 package vip.appcity.celery;
 
-import vip.appcity.celery.spi.Backend;
-import vip.appcity.celery.spi.Backend.ResultsProvider;
-import vip.appcity.celery.spi.BackendFactory;
-import vip.appcity.celery.spi.Broker;
-import vip.appcity.celery.spi.BrokerFactory;
-import vip.appcity.celery.spi.Message;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.base.Suppliers;
@@ -14,6 +7,12 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import lombok.extern.slf4j.Slf4j;
+import vip.appcity.celery.spi.Backend;
+import vip.appcity.celery.spi.Backend.ResultsProvider;
+import vip.appcity.celery.spi.BackendFactory;
+import vip.appcity.celery.spi.Broker;
+import vip.appcity.celery.spi.BrokerFactory;
+import vip.appcity.celery.spi.Message;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -176,6 +175,9 @@ public abstract class CeleryClientCore implements Closeable {
         return submit(taskClass.getName() + "#" + method,null, args);
     }
 
+    public final <R> ListenableFuture<R> submit(String name, Object[] args) throws IOException {
+        return this.submit(name, UUID.randomUUID().toString(), args);
+    }
     /**
      * Submit a task by name. A low level method for submitting arbitrary tasks. The message constructed by this
      * method and sent to the underlying broker conforms Celery Message Protocol Version 2.
