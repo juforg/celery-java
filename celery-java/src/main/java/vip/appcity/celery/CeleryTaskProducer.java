@@ -56,6 +56,16 @@ public class CeleryTaskProducer implements Closeable {
     public final <R> ListenableFuture<R> submit(String taskName, Object[] args) throws IOException {
         return this.submit(taskName, UUID.randomUUID().toString(), args);
     }
+
+    /**
+     * 提交任务，根据配置文件自动选择队列，无配置则走默认队列
+     * @param taskName
+     * @param taskId
+     * @param args
+     * @return
+     * @param <R>
+     * @throws IOException
+     */
     public final <R> ListenableFuture<R> submit(String taskName, String taskId, Object[] args) throws IOException {
         String queueName = taskQueueMaps.get(taskName);
         queueName = StringUtils.isNotBlank(queueName)? queueName : this.defaultQueueName;
@@ -67,6 +77,16 @@ public class CeleryTaskProducer implements Closeable {
         return celery.submit(taskName, taskId, args);
     }
 
+    /**
+     * 向指定队列提交任务
+     * @param queueName
+     * @param taskName
+     * @param taskId
+     * @param args
+     * @return
+     * @param <R>
+     * @throws IOException
+     */
     public final <R> ListenableFuture<R> submit(String queueName, String taskName, String taskId, Object[] args) throws IOException {
         Celery celery = taskQueueClientMap.get(queueName);
         if (celery==null){
