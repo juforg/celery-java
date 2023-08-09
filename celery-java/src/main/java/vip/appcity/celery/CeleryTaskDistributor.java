@@ -30,7 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * 2. SOLID原则：S: 单一职责 O: 开闭原则 L: 迪米特法则 I: 接口隔离原则 D: 依赖倒置原则
  */
 @Slf4j
-public class CeleryTaskProducer implements Closeable {
+public class CeleryTaskDistributor implements Closeable {
     private final Map<String, Celery> taskQueueClientMap = new ConcurrentHashMap<>();
 
     private Map<String, String> taskQueueMaps = new HashMap<>();
