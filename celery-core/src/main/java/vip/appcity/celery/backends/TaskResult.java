@@ -24,6 +24,9 @@ public class TaskResult {
     }
 
     public enum Status {
+        PENDING,
+        STARTED,
+        RETRY,
         SUCCESS,
         FAILURE,
     }
