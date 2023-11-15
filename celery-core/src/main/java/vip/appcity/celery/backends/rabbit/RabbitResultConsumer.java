@@ -1,8 +1,5 @@
 package vip.appcity.celery.backends.rabbit;
 
-import vip.appcity.celery.WorkerException;
-import vip.appcity.celery.backends.TaskResult;
-
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -11,12 +8,13 @@ import com.google.common.util.concurrent.SettableFuture;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
+import lombok.extern.slf4j.Slf4j;
+import vip.appcity.celery.WorkerException;
+import vip.appcity.celery.backends.TaskResult;
 
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Implementation of RabbitMQ consumer as a result provider for {@link RabbitBackend}.
@@ -48,6 +46,11 @@ class RabbitResultConsumer<R> extends DefaultConsumer implements RabbitBackend.R
             payload = backend.jsonMapper.readValue(body, TaskResult.class);
         } catch (IOException e) {
             log.error(String.format("could not read payload for deliveryTag=%d", envelope.getDeliveryTag()), e);
+            getChannel().basicNack(envelope.getDeliveryTag(), false, false);
+            return;
+        }
+        if (payload.status == TaskResult.Status.STARTED || payload.status == TaskResult.Status.PENDING|| payload.status == TaskResult.Status.RETRY){
+            log.debug("{} status {}",payload.taskId, payload.status);
             getChannel().basicNack(envelope.getDeliveryTag(), false, false);
             return;
         }
