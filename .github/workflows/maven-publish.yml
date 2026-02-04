@@ -31,4 +31,8 @@ jobs:
           MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-        run: mvn deploy
+        run: |
+          mvn \
+            -P release \
+            -Dmaven.test.skip=true \
+            clean deploy
